@@ -8,6 +8,9 @@ import { Layer } from "@/services/config";
 import { maskAddress } from "@/utils";
 import { useMemo, useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
+import dynamic from "next/dynamic";
+const WalletsSelectorContainer = dynamic(() => import('./wallets/selector-container'), { ssr: false });
+
 
 type Mode = "via" | "bitcoin";
 
@@ -57,6 +60,7 @@ export default function AddressFieldWithWallet({
   const [showManual, setShowManual] = useState(false); // Explicitly reveal manual entry UI
   const [userHasTyped, setUserHasTyped] = useState(false); // Set after the user starts typing into the input
   const [copied, setCopied] = useState(false); // Track if the address has been copied to clipboard
+  const [showEVMSelector, setShowEvmSelector] = useState(false); // show EVM wallet selector
 
   /**
    * Autofill behavior:
@@ -175,7 +179,7 @@ export default function AddressFieldWithWallet({
               <div className="text-xs text-slate-600 mb-3">Your address will be automatically filled in</div>
               <div className="flex gap-2">
                 {/* Connect wallet CTA (Metamask for EVM, Xverse for BTC) */}
-                <Button type="button" size="sm" onClick={() => (isEvm ? store.connectMetamask() : store.connectXverse())} className="bg-blue-600 hover:bg-blue-700">{isEvm ? "Connect Wallet" : "Connect Xverse"}</Button>
+                <Button type="button" size="sm" onClick={() => (isEvm ? setShowEvmSelector(true) : store.connectXverse())} className="bg-blue-600 hover:bg-blue-700">{isEvm ? "Connect Wallet" : "Connect Xverse"}</Button>
                 {/* Allow user to enter manually even while disconnected */}
                 {allowManualOverride && (
                   <Button type="button" variant="ghost" size="sm" className="text-slate-600" onClick={() => setShowManual(true)}>Enter manually</Button>
@@ -255,6 +259,15 @@ export default function AddressFieldWithWallet({
               <span className={usingManual ? "ml-1 text-slate-700" : "ml-1 text-blue-700"}>• {usingManual ? "Manual" : "Wallet"}</span>
             </div>
           )}
+        </div>
+      )}
+
+      {/* EVM Wallet Selector Dialog */}
+      {isEvm && showEVMSelector && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 9999, pointerEvents: "none" }}>
+          <div style={{ pointerEvents: "auto" }}>
+            <WalletsSelectorContainer initialOpen={true} onClose={() => setShowEvmSelector(false)} showTrigger={false}/>
+          </div>
         </div>
       )}
     </div>
