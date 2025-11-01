@@ -429,6 +429,15 @@ export default function DepositForm({ bitcoinAddress, bitcoinPublicKey, onTransa
                   </div>
                 )}
 
+                {/* Alert when balance is zero */}
+                {balance && Number(balance) === 0 && (
+                  <Alert className="mt-3 bg-amber-50 border-amber-200">
+                    <AlertDescription className="text-amber-800 text-sm">
+                      Your Bitcoin balance is empty. Ensure you have the correct wallet connected or acquire BTC first to make deposits.
+                    </AlertDescription>
+                  </Alert>
+                )}
+
                 {/* balance usage progress and slider*/}
                 {balance && Number(balance) > 0 && (
                   <FormAmountSlider

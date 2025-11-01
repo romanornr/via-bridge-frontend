@@ -6,6 +6,7 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import DepositForm from "@/components/deposit-form";
 import WithdrawForm from "@/components/withdraw-form";
 import WalletConnectButton from "@/components/wallet-connect-button";
+import { WalletConnectButton as EVMConnectButton } from "@/components/wallets/connect-button"
 import { useWalletState } from "@/hooks/use-wallet-state";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, ChevronDown, ChevronUp, Clock } from "lucide-react";
@@ -13,6 +14,7 @@ import { Layer } from "@/services/config";
 import { walletEvents } from "@/store/wallet-store";
 import { TransactionHistory } from "@/components/transaction-history";
 import { useWalletStore } from "@/store/wallet-store";
+import {EvmWalletConnectCard} from "@/components/wallets/connect-card";
 
 export default function BridgeInterface() {
   const [activeTab, setActiveTab] = useState<string>("deposit");
@@ -160,12 +162,7 @@ export default function BridgeInterface() {
                   </div>
                 )
               ) : (
-                <WalletConnectButton
-                  walletType="metamask"
-                  isConnected={isMetamaskConnected}
-                  onConnect={connectMetamask}
-                  onDisconnect={disconnectMetamask}
-                />
+              <EvmWalletConnectCard />
               )}
             </TabsContent>
           </Tabs>

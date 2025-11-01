@@ -337,6 +337,15 @@ export default function WithdrawForm({ viaAddress, onTransactionSubmitted }: Wit
                   </div>
                 )}
 
+                {/* Alert when balance is zero */}
+                {balance && Number(balance) === 0 && (
+                  <Alert className="mt-3 bg-amber-50 border-amber-200">
+                    <AlertDescription className="text-amber-800 text-sm">
+                      Your VIA balance is empty. Ensure you have the correct wallet connected or deposit BTC first to make withdrawals.
+                    </AlertDescription>
+                  </Alert>
+                )}
+
                 {/* balance usage progress */}
                 {balance && Number(balance) >0 && (
                   <FormAmountSlider

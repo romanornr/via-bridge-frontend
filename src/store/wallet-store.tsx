@@ -585,11 +585,28 @@ export const useWalletStore = create<WalletState>((set, get) => ({
     import("@/utils/eip6963-provider")
       .then(({ eip6963Store }) => {
         const providers = eip6963Store.getAllWalletProviders();
+        // const wallets = providers.map((provider: EIP6963ProviderDetail) => ({
+        //   name: resolveDisplayName(provider),
+        //   rdns: provider.info.rdns,
+        //   icon: resolveIcon(provider)
+        // }));
+        //
+        // set({ availableWallets: wallets });
+        // Normalize and sort by rdns
         const wallets = providers.map((provider: EIP6963ProviderDetail) => ({
           name: resolveDisplayName(provider),
           rdns: provider.info.rdns,
-          icon: resolveIcon(provider)
-        }));
+          icon: resolveIcon(provider),
+        })).sort((a, b) => a.rdns.localeCompare(b.rdns));
+
+        // skip update if nothing changed
+        const prev = get().availableWallets;
+        const same = prev.length === wallets.length && prev.every((w, i) =>
+          w.rdns === wallets[i].rdns &&
+        w.name === wallets[i].name &&
+         w.icon === wallets[i].icon
+        );
+        if (same) return;
 
         set({ availableWallets: wallets });
         console.log(`✅ Found ${wallets.length} available wallets:`, wallets);

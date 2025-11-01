@@ -5,9 +5,6 @@ import { Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import Image from "next/image";
-import { getPreferredWeb3ProviderAsync } from "@/utils/ethereum-provider";
-import { resolveIcon } from "@/utils/wallet-metadata";
-import { eip6963Store } from "@/utils/eip6963-provider";
 
 interface WalletConnectButtonProps {
   walletType: "xverse" | "metamask"
@@ -24,41 +21,12 @@ export default function WalletConnectButton({
 }: WalletConnectButtonProps) {
   const [isConnecting, setIsConnecting] = useState(false);
   const [walletName, setWalletName] = useState(walletType === "xverse" ? "Xverse" : "MetaMask");
-  const [walletIcon, setWalletIcon] = useState<string | null>(walletType === "xverse" ? "/xverse-logo.svg" : "/metamask-logo.svg");
+  const walletIcon = walletType === "xverse" ? "/xverse-logo.svg" : "/metamask-logo.svg";
 
+  // Note: This component is now only used for Xverse (Bitcoin deposits).
+  // EVM wallet connections use the new multi-wallet selector.
   useEffect(() => {
-    let cancelled = false;
-
-    async function updateMeta() {
-      if (walletType === "metamask") {
-        try {
-          const best = await getPreferredWeb3ProviderAsync(500);
-          if (cancelled) return;
-
-          setWalletName(best?.name ?? "MetaMask");
-
-          let iconUrl: string | undefined = undefined;
-          try {
-            const detail = eip6963Store.getAllWalletProviders().find(p => p.info.rdns === best?.rdns);
-            iconUrl = detail ? resolveIcon(detail) : undefined;
-          } catch {
-            // ignore resolver errors
-          }
-          setWalletIcon(iconUrl ?? "/metamask-logo.svg");
-        } catch {
-          if (!cancelled) {
-            setWalletName("MetaMask");
-            setWalletIcon("/metamask-logo.svg");
-          }
-        }
-      } else {
-        setWalletName("Xverse");
-        setWalletIcon("/xverse-logo.svg");
-      }
-    }
-
-    updateMeta();
-    return () => { cancelled = true; };
+    setWalletName(walletType === "xverse" ? "Xverse" : "MetaMask");
   }, [walletType]);
 
   const handleConnect = async () => {
@@ -107,35 +75,7 @@ export default function WalletConnectButton({
               aria-hidden="true"
             />
           )}
-          {walletType === "xverse" ? (
-            <Image
-              src="/xverse-logo.svg"
-              alt="Xverse"
-              width={32}
-              height={32}
-              priority
-              className="relative z-10"
-            />
-          ) : walletIcon ? (
-            <Image
-              src={walletIcon}
-              alt={walletName}
-              width={32}
-              height={32}
-              priority
-              unoptimized={!walletIcon.startsWith('/')}
-              className="relative z-10"
-            />
-          ) : (
-            <Image
-              src="/metamask-logo.svg"
-              alt={walletName}
-              width={32}
-              height={32}
-              priority
-              className="relative z-10"
-            />
-          )}
+          <Image src={walletIcon} alt={walletName} width={32} height={32} priority className="relative z-10"/>
         </div>
       </div>
       

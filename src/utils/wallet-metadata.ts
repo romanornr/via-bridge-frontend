@@ -1,13 +1,14 @@
 // Display metadata for unknown wallets
 // This avoids per-wallet string matching and normalizes display
 
-export type WalletBrand = 'MetaMask' | 'Rabby' | 'Coinbase' | 'Unknown';
+export type WalletBrand = 'MetaMask' | 'Rabby' | 'Coinbase' | 'WalletConnect'| 'Unknown';
 
 export interface WalletDisplayMeta {
   rdns: string;
   name: string;
   brand: WalletBrand;
   iconPath?: string;
+  installUrl?: string;
 }
 
 /**
@@ -21,20 +22,23 @@ export const WALLET_METADATA_BY_RDNS: Record<string,
       rdns: 'io.metamask',
       name: 'MetaMask',
       brand: 'MetaMask',
-      iconPath: '/metamask-logo.svg'
+      iconPath: '/metamask-logo.svg',
+      installUrl: 'https://metamask.io/',
     },
     'io.rabby': {
       rdns: 'io.rabby',
       name: 'Rabby',
       brand: 'Rabby',
       // iconPath omitted; use provider.info.icon
+      installUrl: 'https://rabby.io/',
     },
-    'io.coinbase': {
-      rdns: 'io.coinbase',
-      name: 'Coinbase',
-      brand: 'Coinbase',
-      // iconPath omitted; use provider.info.icon
-    }
+  'com.coinbase.wallet': {
+      rdns: 'com.coinbase.wallet',
+    name: 'Coinbase Wallet',
+    brand: 'Coinbase',
+    iconPath: '/coinbase-logo.svg',
+    installUrl: 'https://www.coinbase.com/wallet/downloads',
+  }
 };
 
 /**
