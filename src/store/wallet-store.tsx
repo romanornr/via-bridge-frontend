@@ -534,50 +534,52 @@ export const useWalletStore = create<WalletState>((set, get) => ({
 
   connectWallet: async (rdns: string) => {
     try {
-      console.log(`🔹 Connecting to wallet with rdns: ${rdns}`);
-      
-      const { eip6963Store } = await import("@/utils/eip6963-provider");
-      const providerDetail = eip6963Store.getProviderByRdns(rdns);
-      
-      if (!providerDetail) {
-        throw new WalletNotFoundError(rdns);
-      }
+    console.log(`Connecting to wallet with rdns: ${rdns}`);
+    const {eip6963Store} = await import("@/utils/eip6963-provider");
+    const providerDetail = eip6963Store.getProviderByRdns(rdns);
+    if (!providerDetail) throw new WalletNotFoundError(rdns);
 
-      const provider = providerDetail.provider;
-      
-      // Request account access
-      const accounts = await provider.request({
-        method: "eth_requestAccounts",
-      }) as string[];
+    // Build a targeted wagmi injected connector for this provider
+     const {injectedForProvider} = await import('@/lib/wagmi/connector');
+     const connector = injectedForProvider(providerDetail);
+ 
+    // connect via wagmi core using local config
+     const {connect, switchChain, getAccount} = await import('@wagmi/core');
+     const {wagmiConfig} = await import('@/lib/wagmi/config');
+ 
+     // Derive the configured chain dynamically (supports ViaTestnet or ViaMainnet)
+     const targetChainId = wagmiConfig.chains[0]?.id;
+     if (!targetChainId) throw new Error('No chains configured in wagmiConfig');
+ 
+     await connect(wagmiConfig, {connector});
+     // Ensure we are on the configured VIA chain; ignore if already on correct chain
+     await switchChain(wagmiConfig, {chainId: targetChainId}).catch(() => {});
 
-      if (!accounts || accounts.length === 0) {
-        throw new Error("No accounts returned from wallet");
-      }
+    // Read the account and sync store
+    const account = getAccount(wagmiConfig);
+    const address = account?.address as string | undefined;
 
-      const address = accounts[0];
-      set({
-        viaAddress: address,
-        isMetamaskConnected: true, // For now, treating all EIP-6963 wallets as "metamask-like"
-      });
-      // Route selection through setter to emit WalletChanged
-      get().setSelectedWallet(rdns);
+    set({
+      viaAddress: address ?? null,
+      isMetamaskConnected: !!address,
+    });
+    get().setSelectedWallet(rdns);
 
-      // Check network after connection
-      await get().checkMetamaskNetwork();
-
-      console.log(`✅ Wallet ${providerDetail.info.name} connected, address:`, maskAddress(address));
-      walletEvents.metamaskConnected.emit();
-      return true;
-    } catch (error: any) {
-      const USER_REJECTION_ERROR_CODE = 4001;
-      if (error.code === USER_REJECTION_ERROR_CODE) {
-        console.log("Connection rejected by user");
-        return false;
-      }
-      console.error(`Wallet connection error for ${rdns}:`, error);
-      throw error;
+    // Aready switched chain via wagmi, mark as correct
+    set({isCorrectViaNetwork: true});
+    console.log(`Wallet ${providerDetail.info.name} connected address`, maskAddress(address || ''));
+    walletEvents.metamaskConnected.emit();
+    return !!address;
+  } catch (error: any) {
+    const USER_REJECTION_ERROR_CODE = 4001;
+    if (error.code ==USER_REJECTION_ERROR_CODE) {
+      console.log("Connection rejected by user");
+      return false;
     }
-  },
+    console.error(`Wallet connection error for ${rdns}:`, error);
+    throw error;
+  }
+},
 
   refreshAvailableWallets: () => {
   try {
@@ -585,13 +587,6 @@ export const useWalletStore = create<WalletState>((set, get) => ({
     import("@/utils/eip6963-provider")
       .then(({ eip6963Store }) => {
         const providers = eip6963Store.getAllWalletProviders();
-        // const wallets = providers.map((provider: EIP6963ProviderDetail) => ({
-        //   name: resolveDisplayName(provider),
-        //   rdns: provider.info.rdns,
-        //   icon: resolveIcon(provider)
-        // }));
-        //
-        // set({ availableWallets: wallets });
         // Normalize and sort by rdns
         const wallets = providers.map((provider: EIP6963ProviderDetail) => ({
           name: resolveDisplayName(provider),
@@ -602,9 +597,7 @@ export const useWalletStore = create<WalletState>((set, get) => ({
         // skip update if nothing changed
         const prev = get().availableWallets;
         const same = prev.length === wallets.length && prev.every((w, i) =>
-          w.rdns === wallets[i].rdns &&
-        w.name === wallets[i].name &&
-         w.icon === wallets[i].icon
+          w.rdns === wallets[i].rdns && w.name === wallets[i].name && w.icon === wallets[i].icon
         );
         if (same) return;
 

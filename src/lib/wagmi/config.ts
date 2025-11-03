@@ -1,5 +1,5 @@
 import { createConfig, http, type Config } from 'wagmi';
-import { viaTestNet, ViaMainnet } from '@/lib/wagmi/chains';
+import { ViaTestnet, ViaMainnet } from '@/lib/wagmi/chains';
 import { BRIDGE_CONFIG } from '@/services/config';
 import { BitcoinNetwork } from '@/services/bitcoin/types';
 
@@ -18,9 +18,9 @@ export const wagmiConfig: Config = isMainnet
       multiInjectedProviderDiscovery: false, // we manage providers via EIP-6963 + targeted connectors
     })
   : createConfig({
-      chains: [viaTestNet] as const,
+      chains: [ViaTestnet] as const,
       transports: {
-        [viaTestNet.id]: http(),
+        [ViaTestnet.id]: http(),
       },
       connectors: [], // construct targeted injected connectors at connect time
       multiInjectedProviderDiscovery: false, // we manage providers via EIP-6963 + targeted connectors

@@ -1,6 +1,6 @@
 import { defineChain } from 'viem';
 
-export const viaTestNet = defineChain({
+export const ViaTestnet = defineChain({
   id: 25223, // 0x6287
   name: 'Via Alpha Testnet',
   nativeCurrency: { name: 'BTC', symbol: 'BTC', decimals: 18 },

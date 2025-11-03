@@ -22,7 +22,7 @@ export const WALLET_METADATA_BY_RDNS: Record<string,
       rdns: 'io.metamask',
       name: 'MetaMask',
       brand: 'MetaMask',
-      iconPath: '/metamask-logo.svg',
+      // iconPath omitted; use provider.info.icon
       installUrl: 'https://metamask.io/',
     },
     'io.rabby': {
@@ -33,12 +33,19 @@ export const WALLET_METADATA_BY_RDNS: Record<string,
       installUrl: 'https://rabby.io/',
     },
   'com.coinbase.wallet': {
-      rdns: 'com.coinbase.wallet',
+    rdns: 'com.coinbase.wallet',
     name: 'Coinbase Wallet',
     brand: 'Coinbase',
-    iconPath: '/coinbase-logo.svg',
+    // iconPath omitted; use provider.info.icon
     installUrl: 'https://www.coinbase.com/wallet/downloads',
-  }
+  },
+  'com.walletconnect': {
+      rdns: 'com.walletconnect',
+      name: 'WalletConnect',
+      brand: 'WalletConnect',
+      // iconPath omitted; use provider.info.icon
+      // No installUrl, QR connect will be handled by Wagmi connector
+  },
 };
 
 /**

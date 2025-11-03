@@ -25,7 +25,8 @@ function buildDetectedWallets(availableWallets: Array<{ name: string, rdns: stri
       id,
       name: meta.name ?? wallet.name,
       description: "Detected in your browser",
-      iconUrl: wallet.icon,
+      // Prefer bundled icon, fallback to provider icon (matches resolveIcon logic)
+      iconUrl: meta.iconPath ?? wallet.icon,
     });
   }
   return out;
@@ -84,13 +85,11 @@ export default function WalletSelector({
 
   return (
     <div className="p-8 space-y-4">
-      {/* <Button onClick={() => setOpen(true)}>Open Connect Dialog</Button> */}
 
       {showTrigger && (
         <Button onClick={() => setOpen(true)}>Connect</Button>
       )}
 
-      {/*<Dialog open={open} onOpenChange={setOpen}>*/}
       <Dialog
         open={open}
         onOpenChange={(v) => {
