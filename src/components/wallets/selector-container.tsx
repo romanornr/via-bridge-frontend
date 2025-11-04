@@ -81,16 +81,46 @@ const onSelectWallet = async(rdns: string, detected: boolean) => {
     try {
       const connector = walletConnectForQR({ projectId: NEXT_PUBLIC_WALLETCONNECT_ID})
       await connect(wagmiConfig, { connector });
-      // Ensure we are on the configured chain and ignore if we already are on the correct chain
-      await switchChain(wagmiConfig, { chainId: targetChainId }).catch(() => {});
+      // Ensure we are on the configured chain. If missing, provide EIP-3085 params so the wallet can add it.
+      const { VIA_NETWORK_CONFIG, BRIDGE_CONFIG } = await import('@/services/config');
+      const addParams = VIA_NETWORK_CONFIG[BRIDGE_CONFIG.defaultNetwork];
+      let switchedOk = true;
+      try {
+        await switchChain(wagmiConfig, {
+          chainId: targetChainId,
+          addEthereumChainParameter: {
+            chainName: wagmiConfig.chains[0]?.name ?? addParams.chainName,
+            nativeCurrency: addParams.nativeCurrency,
+            rpcUrls: addParams.rpcUrls,
+            blockExplorerUrls: addParams.blockExplorerUrls,
+          },
+        });
+      } catch (err) {
+        console.error('switchChain failed for WalletConnect (add/switch Via)', err);
+        switchedOk = false;
+      }
+
       const account = getAccount(wagmiConfig);
       const address = account?.address;
       const state = useWalletStore.getState();
       state.setViaAddress(address ?? null);
       state.setIsMetamaskConnected(!!address);
       state.setSelectedWallet(rdns); // '.com.walletconnect'
-      // since we switched chain successfully, mark network as correct
-      state.setIsCorrectViaNetwork(true);
+      // Verify chain id from provider when available, and set correctness accordingly.
+      let verifiedOk = switchedOk;
+      try {
+        const { getPreferredWeb3ProviderAsync } = await import('@/utils/ethereum-provider');
+        const bestProvider = await getPreferredWeb3ProviderAsync();
+        if (bestProvider) {
+          const hex = await bestProvider.provider.request({ method: 'eth_chainId' });
+          const expectedHex = VIA_NETWORK_CONFIG[BRIDGE_CONFIG.defaultNetwork].chainId;
+          const ok = typeof hex === 'string' && hex.toLowerCase() === expectedHex.toLowerCase();
+          verifiedOk = ok;
+        }
+      } catch (e) {
+        // non-fatal: keep switchedOk value
+      }
+      state.setIsCorrectViaNetwork(verifiedOk);
       // Load local tx after connect
       state.loadLocalTransactions();
       walletEvents.metamaskConnected.emit();

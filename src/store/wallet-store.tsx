@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Layer } from '@/services/config';
+import {BRIDGE_CONFIG, Layer} from '@/services/config';
 import { createEvent } from "@/utils/events";
 import { getPreferredWeb3ProviderAsync } from "@/utils/ethereum-provider";
 import { WalletNotFoundError } from "@/utils/wallet-errors";
@@ -546,14 +546,34 @@ export const useWalletStore = create<WalletState>((set, get) => ({
     // connect via wagmi core using local config
      const {connect, switchChain, getAccount} = await import('@wagmi/core');
      const {wagmiConfig} = await import('@/lib/wagmi/config');
+     const {VIA_NETWORK_CONFIG} = await import("@/services/config");
  
      // Derive the configured chain dynamically (supports ViaTestnet or ViaMainnet)
      const targetChainId = wagmiConfig.chains[0]?.id;
      if (!targetChainId) throw new Error('No chains configured in wagmiConfig');
  
-     await connect(wagmiConfig, {connector});
-     // Ensure we are on the configured VIA chain; ignore if already on correct chain
-     await switchChain(wagmiConfig, {chainId: targetChainId}).catch(() => {});
+     // await connect(wagmiConfig, {connector});
+     // // Ensure we are on the configured VIA chain; ignore if already on correct chain
+     // await switchChain(wagmiConfig, {chainId: targetChainId}).catch(() => {});
+      await connect(wagmiConfig, {connector});
+      // if the chain is not present, pass the EIP-3085 params so the waallet can add it
+      let switchOk = true;
+      try {
+        const addParams = VIA_NETWORK_CONFIG[BRIDGE_CONFIG.defaultNetwork];
+        await switchChain(wagmiConfig, {
+          chainId: targetChainId,
+          addEthereumChainParameter: {
+            // prefer wagmi chain label. Fallback to config
+            chainName: wagmiConfig.chains[0]?.name || addParams.chainName,
+            nativeCurrency: addParams.nativeCurrency,
+            rpcUrls: addParams.rpcUrls,
+            blockExplorerUrls: addParams.blockExplorerUrls,
+          },
+        });
+      } catch (err) {
+        console.error('SwitchChain failed for injected provider (add/switch Via)', err);
+        switchOk = false;
+      }
 
     // Read the account and sync store
     const account = getAccount(wagmiConfig);
@@ -565,8 +585,8 @@ export const useWalletStore = create<WalletState>((set, get) => ({
     });
     get().setSelectedWallet(rdns);
 
-    // Aready switched chain via wagmi, mark as correct
-    set({isCorrectViaNetwork: true});
+    // Already switched chain via wagmi, mark as correct
+    set({isCorrectViaNetwork: switchOk});
     console.log(`Wallet ${providerDetail.info.name} connected address`, maskAddress(address || ''));
     walletEvents.metamaskConnected.emit();
     return !!address;
