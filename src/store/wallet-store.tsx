@@ -406,8 +406,12 @@ export const useWalletStore = create<WalletState>((set, get) => ({
 
         // Get the actual connector instance from the connection
           const connections = getConnections(wagmiConfig);
-          const activeConnector = connections.find(c => c?.connector.id === rdns)?.connector;;
-          if (!activeConnector) throw new Error("No active connector found");
+          const acct = getAccount(wagmiConfig);
+          const activeConnector = acct?.connector ?? connections[0]?.connector;
+          if (!activeConnector) {
+            console.error("No active connector found");
+            return false;
+          }
 
         // Add+switch using EIP-3085 params so wallets without VIA configured will prompt to add it
           const addParams = VIA_NETWORK_CONFIG[BRIDGE_CONFIG.defaultNetwork];
@@ -431,8 +435,8 @@ export const useWalletStore = create<WalletState>((set, get) => ({
           }
 
           // Sync address & connection state
-          const account = getAccount(wagmiConfig);
-          const address = account?.address as string | undefined;
+          const accountAfter = getAccount(wagmiConfig);
+          const address = accountAfter?.address as string | undefined;
           set({ viaAddress: address ?? null, isMetamaskConnected: !!address, isCorrectViaNetwork: switchedOk });
           get().loadLocalTransactions();
           walletEvents.metamaskConnected.emit();
@@ -524,17 +528,15 @@ export const useWalletStore = create<WalletState>((set, get) => ({
         case Layer.L2:
           if (isMetamaskConnected) {
             const { wagmiConfig } = await import('@/lib/wagmi/config');
-            const { getConnections, switchChain, getChainId  } = await import('@wagmi/core');
+            const { getConnections, getAccount, switchChain, getChainId  } = await import('@wagmi/core');
             const { VIA_NETWORK_CONFIG, BRIDGE_CONFIG } = await import("@/services/config");
 
             const targetChainId = wagmiConfig.chains[0]?.id;
             if (!targetChainId) throw new Error('No chains configured in wagmiConfig');
 
             const connections = getConnections(wagmiConfig);
-            ///const activeConnector = getConnections(wagmiConfig);
-            const rdns = useWalletStore.getState().selectedWallet;
-            const activeConnector = connections.find((c) => c?.connector?.id === rdns)?.connector ??
-              connections[0]?.connector;
+            const accountConn = getAccount(wagmiConfig);
+            const activeConnector = accountConn?.connector ?? connections[0]?.connector;
 
             let switchOk = true;
             try {
@@ -590,7 +592,7 @@ export const useWalletStore = create<WalletState>((set, get) => ({
      const connector = injectedForProvider(providerDetail);
  
     // connect via wagmi core using local config
-     const {connect, switchChain, getAccount} = await import('@wagmi/core');
+     const {connect, switchChain, getAccount, getConnections} = await import('@wagmi/core');
      const {wagmiConfig} = await import('@/lib/wagmi/config');
      const {VIA_NETWORK_CONFIG} = await import("@/services/config");
  
@@ -598,9 +600,6 @@ export const useWalletStore = create<WalletState>((set, get) => ({
      const targetChainId = wagmiConfig.chains[0]?.id;
      if (!targetChainId) throw new Error('No chains configured in wagmiConfig');
  
-     // await connect(wagmiConfig, {connector});
-     // // Ensure we are on the configured VIA chain; ignore if already on correct chain
-     // await switchChain(wagmiConfig, {chainId: targetChainId}).catch(() => {});
       await connect(wagmiConfig, {connector});
       // if the chain is not present, pass the EIP-3085 params so the waallet can add it
       let switchOk = true;
@@ -617,8 +616,12 @@ export const useWalletStore = create<WalletState>((set, get) => ({
           },
         });
       } catch (err) {
-        console.error('SwitchChain failed for injected provider (add/switch Via)', err);
-        switchOk = false;
+        console.error('SwitchChain failed for injected provider (add/switch Via), trying fallback:', err);
+        const { addAndSwitchToViaChain } = await import('@/lib/wagmi/addAndSwitchToViaChain');
+        const connections = getConnections(wagmiConfig);
+        const accountConn = getAccount(wagmiConfig);
+        const activeConnector = accountConn?.connector ?? connections[0]?.connector;
+        switchOk = await addAndSwitchToViaChain(activeConnector);
       }
 
     // Read the account and sync store

@@ -12,7 +12,7 @@ export async function addAndSwitchToViaChain(connector?: Connector): Promise<boo
   try {
     const { BRIDGE_CONFIG, VIA_NETWORK_CONFIG } = await import('@/services/config');
     const { wagmiConfig } = await import('@/lib/wagmi/config');
-    const { getConnections } = await import('@wagmi/core');
+    const { getConnections, getAccount } = await import('@wagmi/core');
 
     const chainConfig = VIA_NETWORK_CONFIG[BRIDGE_CONFIG.defaultNetwork];
 
@@ -28,16 +28,44 @@ export async function addAndSwitchToViaChain(connector?: Connector): Promise<boo
       blockExplorerUrls: chainConfig.blockExplorerUrls,
     };
 
-    // Get the provider from the connector or first active connection
-    const connections = getConnections(wagmiConfig);
-    const fallbackConnector = connections[0]?.connector;
-    const chosenConnector = connector ?? fallbackConnector;
-    const provider: any = await chosenConnector?.getProvider?.();
+    // // Get the provider from the connector or first active connection
+    // const connections = getConnections(wagmiConfig);
+    // const fallbackConnector = connections[0]?.connector;
+    // const chosenConnector = connector ?? fallbackConnector;
+    // const provider: any = await chosenConnector?.getProvider?.();
+
+    // Resolve provider in this order: connector arg -> getAccount().connector -> first active connection
+    let provider: any | undefined;
+    let resolved: 'arg' | 'account' | 'first' | 'none' = 'none';
+
+    if (connector?.getProvider) {
+      provider = await connector.getProvider();
+      resolved = 'arg';
+    }
 
     if (!provider?.request) {
-      console.warn('AddAndSwitchToViaChain: No provider found');
+      const account = getAccount(wagmiConfig);
+      const accountConnector = account?.connector as any;
+      if (accountConnector?.getProvider) {
+        provider = await accountConnector.getProvider();
+        resolved = 'account';
+      }
+    }
+
+    if (!provider?.request) {
+      const connections = getConnections(wagmiConfig);
+      const firstConnector = connections[0]?.connector as any;
+      if (firstConnector?.getProvider) {
+        provider = await firstConnector.getProvider();
+        resolved = 'first';
+      }
+    }
+
+    if (!provider?.request) {
+      console.warn('addAndSwitchToViaChain: No provider found');
       return false;
     }
+    console.debug('addAndSwitchToViaChain: provider resolved via', resolved);
 
     // Try to switch to the Via Network chain (might already be on it)
     try {
