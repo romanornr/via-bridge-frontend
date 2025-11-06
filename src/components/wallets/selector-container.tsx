@@ -52,13 +52,6 @@ export default function WalletsSelectorContainer({ initialOpen = true, onClose, 
   }, [refreshAvailableWallets]);
 
 const onSelectWallet = async(rdns: string, detected: boolean) => {
-  // if (detected) {
-  //   await connectWallet(rdns);
-  //   return;
-  // }
-  // const meta = WALLET_METADATA_BY_RDNS[rdns];
-  // if (meta?.installUrl) window.open(meta.installUrl, "_blank", "noopener,noreferrer");
-
   const meta = WALLET_METADATA_BY_RDNS[rdns];
   if (detected) {
     await connectWallet(rdns);
@@ -79,8 +72,21 @@ const onSelectWallet = async(rdns: string, detected: boolean) => {
       return;
     }
     try {
-      const connector = walletConnectForQR({ projectId: NEXT_PUBLIC_WALLETCONNECT_ID})
-      await connect(wagmiConfig, { connector });
+      const connectorFn = walletConnectForQR({ projectId: NEXT_PUBLIC_WALLETCONNECT_ID});
+      await connect(wagmiConfig, { connector: connectorFn});
+
+      const { getConnections } = await import('@wagmi/core');
+      const connections = getConnections(wagmiConfig);
+      // WalletConnect connector might have different ID variations
+      const activeConnector = connections.find(c => 
+        c.connector.id.toLowerCase().includes('walletconnect')
+      )?.connector ?? connections[0]?.connector;
+
+      if (!activeConnector) {
+        console.error('No WalletConnect connector found after connect');
+        return;
+      }
+
       // Ensure we are on the configured chain. If missing, provide EIP-3085 params so the wallet can add it.
       const { VIA_NETWORK_CONFIG, BRIDGE_CONFIG } = await import('@/services/config');
       const addParams = VIA_NETWORK_CONFIG[BRIDGE_CONFIG.defaultNetwork];
@@ -88,6 +94,7 @@ const onSelectWallet = async(rdns: string, detected: boolean) => {
       try {
         await switchChain(wagmiConfig, {
           chainId: targetChainId,
+          connector: activeConnector,
           addEthereumChainParameter: {
             chainName: wagmiConfig.chains[0]?.name ?? addParams.chainName,
             nativeCurrency: addParams.nativeCurrency,
@@ -96,8 +103,10 @@ const onSelectWallet = async(rdns: string, detected: boolean) => {
           },
         });
       } catch (err) {
-        console.error('switchChain failed for WalletConnect (add/switch Via)', err);
-        switchedOk = false;
+        console.error('switchChain failed for WalletConnect, trying fallback:', err);
+        // Fallback for WalletConnect wallets
+        const { addAndSwitchToViaChain } = await import('@/lib/wagmi/addAndSwitchToViaChain');
+          switchedOk = await addAndSwitchToViaChain(activeConnector);
       }
 
       const account = getAccount(wagmiConfig);
@@ -106,18 +115,19 @@ const onSelectWallet = async(rdns: string, detected: boolean) => {
       state.setViaAddress(address ?? null);
       state.setIsMetamaskConnected(!!address);
       state.setSelectedWallet(rdns); // '.com.walletconnect'
-      // Verify chain id from provider when available, and set correctness accordingly.
+      
+      // Verify chain using WalletConnect connector's provider
       let verifiedOk = switchedOk;
       try {
-        const { getPreferredWeb3ProviderAsync } = await import('@/utils/ethereum-provider');
-        const bestProvider = await getPreferredWeb3ProviderAsync();
-        if (bestProvider) {
-          const hex = await bestProvider.provider.request({ method: 'eth_chainId' });
+        const wcProvider = await activeConnector.getProvider() as any;
+        if (wcProvider?.request) {
+          const hex = await wcProvider.request({ method: 'eth_chainId' }) as string;
           const expectedHex = VIA_NETWORK_CONFIG[BRIDGE_CONFIG.defaultNetwork].chainId;
-          const ok = typeof hex === 'string' && hex.toLowerCase() === expectedHex.toLowerCase();
-          verifiedOk = ok;
+          verifiedOk = hex.toLowerCase() === expectedHex.toLowerCase();
+          console.log('WalletConnect chain verification:', { hex, expectedHex, verifiedOk });
         }
-      } catch (e) {
+      } catch (err) {
+        console.warn('WalletConnect chain verification failed:', err);
         // non-fatal: keep switchedOk value
       }
       state.setIsCorrectViaNetwork(verifiedOk);

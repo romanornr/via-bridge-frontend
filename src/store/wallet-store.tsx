@@ -6,6 +6,8 @@ import { WalletNotFoundError } from "@/utils/wallet-errors";
 import { fetchUserTransactions, mapApiTransactionsToAppFormat, fetchFeeEstimation, fetchDepositFeeEstimation } from "@/services/api";
 import { maskAddress } from "@/utils";
 import { resolveDisplayName, resolveIcon } from '@/utils/wallet-metadata';
+import {injectedForProvider} from "@/lib/wagmi/connector";
+import {getConnections} from "@wagmi/core";
 
 // Create events for wallet state changes
 export const walletEvents = {
@@ -379,40 +381,70 @@ export const useWalletStore = create<WalletState>((set, get) => ({
 
   connectMetamask: async () => {
     try {
-      console.log("🔹 Connecting to wallet...");
-            
-      const bestProvider = await getPreferredWeb3ProviderAsync();
-      if (!bestProvider) {
-        throw new Error("No wallet found. Please install MetaMask, Rabby, or another compatible wallet extension.");
+      console.log("Connecting to wallet...");
+      const state = useWalletStore.getState();
+      const rdns = state.selectedWallet;
+      if (!rdns)  {
+        throw new Error("No wallet selected. Open the wallet selector to pick a wallet");
       }
+      console.log(`Using selected wallet ${rdns}`);
+      // Prefer wagmi connect via targeted injected connector when EIP-6963 details are available
 
-      console.log(`🔗 Using ${bestProvider.name} (${bestProvider.rdns})`);
+      try {
+        const { eip6963Store } = await import("@/utils/eip6963-provider");
+        const detail =  eip6963Store.getProviderByRdns(rdns) as EIP6963ProviderDetail | undefined;
+        if (detail) {
+          const { wagmiConfig } = await import("@/lib/wagmi/config");
+          const { connect, switchChain, getAccount } = await import('@wagmi/core');
+          const { VIA_NETWORK_CONFIG, BRIDGE_CONFIG } = await import("@/services/config");
 
-      // Ensure selection reflects the chosen provider and emits walletChanged if changed
-      get().setSelectedWallet(bestProvider.rdns);
+          const connectorFn = injectedForProvider(detail);
+          const targetedChainId = wagmiConfig.chains[0]?.id;
+          if (!targetedChainId) throw new Error("No chains configured in wagmiConfig");
 
-      const accounts = await bestProvider.provider.request({
-        method: "eth_requestAccounts",
-      }) as string[];
+        await connect(wagmiConfig, { connector: connectorFn });
 
-      const address = accounts[0];
-      set({
-        viaAddress: address,
-        isMetamaskConnected: true
-      });
+        // Get the actual connector instance from the connection
+          const connections = getConnections(wagmiConfig);
+          const activeConnector = connections.find(c => c?.connector.id === rdns)?.connector;;
+          if (!activeConnector) throw new Error("No active connector found");
 
-      // Check network after connection
-      await get().checkMetamaskNetwork();
+        // Add+switch using EIP-3085 params so wallets without VIA configured will prompt to add it
+          const addParams = VIA_NETWORK_CONFIG[BRIDGE_CONFIG.defaultNetwork];
+          let switchedOk = true;
+          try {
+            await switchChain(wagmiConfig, {
+              chainId: targetedChainId,
+              connector: activeConnector,
+              addEthereumChainParameter: {
+                chainName: wagmiConfig.chains[0]?.name ?? addParams.chainName,
+                nativeCurrency: addParams.nativeCurrency,
+                rpcUrls: addParams.rpcUrls,
+                blockExplorerUrls: addParams.blockExplorerUrls,
+              },
+            });
+          } catch (err) {
+            console.error("switchChain failed, trying direct EIP-1193 fallback:", err);
+            // Fallback for wallets that don't support wagmi's switchChain such as Rabbywallet
+            const { addAndSwitchToViaChain } = await import('@/lib/wagmi/addAndSwitchToViaChain');
+            switchedOk = await addAndSwitchToViaChain(activeConnector);
+          }
 
-      // Load local transactions after connecting
-      get().loadLocalTransactions();
-
-      console.log("✅ MetaMask wallet connected, address:", address);
-      walletEvents.metamaskConnected.emit();
-      return true;
+          // Sync address & connection state
+          const account = getAccount(wagmiConfig);
+          const address = account?.address as string | undefined;
+          set({ viaAddress: address ?? null, isMetamaskConnected: !!address, isCorrectViaNetwork: switchedOk });
+          get().loadLocalTransactions();
+          walletEvents.metamaskConnected.emit();
+          console.log("wallet connected via wagmi", address);
+          return !!address;
+        }
+      } catch {}
+      // No fallback for now
+      return false;
     } catch (error: any) {
       const USER_REJECTION_ERROR_CODE = 4001;
-      if (error.code === USER_REJECTION_ERROR_CODE) {
+      if (error?.code === USER_REJECTION_ERROR_CODE) {
         console.log("Connection rejected by user");
         return false;
       }
@@ -491,38 +523,53 @@ export const useWalletStore = create<WalletState>((set, get) => ({
           break;
         case Layer.L2:
           if (isMetamaskConnected) {
-            // For MetaMask, we can request a network switch
-            const bestProvider = await getPreferredWeb3ProviderAsync();
-            if (!bestProvider) {
-              throw new Error("Wallet not found or not accessible");
-            }
-            const provider = bestProvider.provider;
-
+            const { wagmiConfig } = await import('@/lib/wagmi/config');
+            const { getConnections, switchChain, getChainId  } = await import('@wagmi/core');
             const { VIA_NETWORK_CONFIG, BRIDGE_CONFIG } = await import("@/services/config");
-            const expectedChainId = VIA_NETWORK_CONFIG[BRIDGE_CONFIG.defaultNetwork].chainId;
 
+            const targetChainId = wagmiConfig.chains[0]?.id;
+            if (!targetChainId) throw new Error('No chains configured in wagmiConfig');
+
+            const connections = getConnections(wagmiConfig);
+            ///const activeConnector = getConnections(wagmiConfig);
+            const rdns = useWalletStore.getState().selectedWallet;
+            const activeConnector = connections.find((c) => c?.connector?.id === rdns)?.connector ??
+              connections[0]?.connector;
+
+            let switchOk = true;
             try {
-              await provider.request({
-                method: 'wallet_switchEthereumChain',
-                params: [{ chainId: expectedChainId }],
-              });
-              set({ isCorrectViaNetwork: true });
-              walletEvents.networkChanged.emit();
-              return true;
-            } catch (switchError: any) {
-              // This error code indicates that the chain has not been added to the user wallet
-              if (switchError.code === 4902) {
-                await provider.request({
-                  method: 'wallet_addEthereumChain',
-                  params: [VIA_NETWORK_CONFIG[BRIDGE_CONFIG.defaultNetwork]],
+              if (activeConnector) {
+                await switchChain(wagmiConfig, {
+                  chainId: targetChainId,
+                  connector: activeConnector,
+                  addEthereumChainParameter: {
+                    chainName: wagmiConfig.chains[0]?.name ?? VIA_NETWORK_CONFIG[BRIDGE_CONFIG.defaultNetwork].chainName,
+                    nativeCurrency: VIA_NETWORK_CONFIG[BRIDGE_CONFIG.defaultNetwork].nativeCurrency,
+                    rpcUrls: VIA_NETWORK_CONFIG[BRIDGE_CONFIG.defaultNetwork].rpcUrls,
+                    blockExplorerUrls: VIA_NETWORK_CONFIG[BRIDGE_CONFIG.defaultNetwork].blockExplorerUrls,
+                  },
                 });
-                set({ isCorrectViaNetwork: true });
-                walletEvents.networkChanged.emit();
-                return true;
+                switchOk = true;
               }
-              throw switchError;
+            } catch (err) {
+              console.error('SwitchChain failed, trying fallback:', err);
+              // Fallback: use direct EIP-1193 provider methods
+              const { addAndSwitchToViaChain } = await import("@/lib/wagmi/addAndSwitchToViaChain");
+              switchOk = await addAndSwitchToViaChain(activeConnector);
             }
-          }
+
+               //  Verify connected chain matches target (avoid false positives)
+            try {
+              const currentId = getChainId(wagmiConfig);
+              switchOk = switchOk && currentId === targetChainId;
+            } catch {
+              // ignore
+            }
+
+            set({ isCorrectViaNetwork: switchOk });
+            walletEvents.networkChanged.emit();
+            return switchOk;
+           }
           break;
       }
     } catch (error) {
@@ -539,8 +586,7 @@ export const useWalletStore = create<WalletState>((set, get) => ({
     const providerDetail = eip6963Store.getProviderByRdns(rdns);
     if (!providerDetail) throw new WalletNotFoundError(rdns);
 
-    // Build a targeted wagmi injected connector for this provider
-     const {injectedForProvider} = await import('@/lib/wagmi/connector');
+    // Build a targeted wagmi injected connector for this provider (uses top-level import)
      const connector = injectedForProvider(providerDetail);
  
     // connect via wagmi core using local config
