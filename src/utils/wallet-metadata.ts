@@ -1,7 +1,7 @@
 // Display metadata for unknown wallets
 // This avoids per-wallet string matching and normalizes display
 
-export type WalletBrand = 'MetaMask' | 'Rabby' | 'Coinbase' | 'WalletConnect'| 'Unknown';
+export type WalletBrand = 'MetaMask' | 'Rabby' | 'Coinbase' |'Rainbow'| 'WalletConnect'| 'Unknown';
 
 export interface WalletDisplayMeta {
   rdns: string;
@@ -23,7 +23,7 @@ export const WALLET_METADATA_BY_RDNS: Record<string,
       name: 'MetaMask',
       brand: 'MetaMask',
       iconPath: '/metamask-logo.svg',
-      installUrl: 'https://metamask.io/',
+      installUrl: 'https://metamask.io/download',
     },
     'io.rabby': {
       rdns: 'io.rabby',
@@ -32,18 +32,25 @@ export const WALLET_METADATA_BY_RDNS: Record<string,
       iconPath: '/rabbywallet-logo.svg',
       installUrl: 'https://rabby.io/',
     },
-  'com.coinbase.wallet': {
-    rdns: 'com.coinbase.wallet',
-    name: 'Coinbase Wallet',
-    brand: 'Coinbase',
-    iconPath: '/coinbase-logo.svg',
-    installUrl: 'https://www.coinbase.com/wallet/downloads',
-  },
-  'com.walletconnect': {
+    'com.coinbase.wallet': {
+      rdns: 'com.coinbase.wallet',
+      name: 'Coinbase Wallet',
+      brand: 'Coinbase',
+      iconPath: '/coinbase-logo.svg',
+      installUrl: 'https://www.coinbase.com/wallet/downloads',
+    },
+    'me.rainbow': {
+      rdns: 'me.rainbow',
+      name: 'Rainbow',
+      brand: 'Rainbow',
+      iconPath: '/rainbow-logo.svg',
+      installUrl: 'https://rainbow.me/download',
+    },
+    'com.walletconnect': {
       rdns: 'com.walletconnect',
       name: 'WalletConnect',
       brand: 'WalletConnect',
-       iconPath: '/walletconnect-logo.svg',
+      iconPath: '/walletconnect-logo.svg',
       // No installUrl, QR connect will be handled by Wagmi connector
   },
 };
