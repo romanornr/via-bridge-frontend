@@ -78,7 +78,7 @@ export default function ApprovalModal({
             </div>
 
             {/* Scrollable body */}
-            <div className="p-6 pt-0 flex-1 min-h-0 overflow-y-auto">
+            <div className="px-6 pt-0 pb-0 flex-1 min-h-0 overflow-y-auto">
               {/* Route */}
               <div className="bg-slate-50 rounded-xl p-4 mb-6 border border-slate-200 shadow-sm">
                 <div className="flex items-center justify-between">
@@ -196,7 +196,7 @@ export default function ApprovalModal({
               </div>
 
             {/* Sticky actions */}
-            <div className="sticky bottom-0 bg-white py-4 border-t border-slate-200">
+            <div className="sticky bottom-0 bg-white pt-4 pb-2 border-t border-slate-200">
               <div className="px-6 flex items-center gap-3">
                 <div className="relative w-5 h-5" aria-busy>
                   <svg viewBox="0 0 24 24" className="w-5 h-5" style={{ animation: "spin 1.2s linear infinite" } as React.CSSProperties}>
