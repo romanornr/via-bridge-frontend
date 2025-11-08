@@ -2,7 +2,7 @@ import { defineChain } from 'viem';
 
 export const ViaTestnet = defineChain({
   id: 25223, // 0x6287
-  name: 'Via Alpha Testnet',
+  name: 'Via Network Sepolia',
   nativeCurrency: { name: 'BTC', symbol: 'BTC', decimals: 18 },
   rpcUrls: {
     default: { http: ['https://via.testnet.viablockchain.dev'] },
@@ -16,7 +16,7 @@ export const ViaTestnet = defineChain({
 
 export const ViaMainnet = defineChain({
   id: 5223,  // 0x1467
-  name: 'Via Mainnet',
+  name: 'Via Network',
   nativeCurrency: { name: 'BTC', symbol: 'BTC', decimals: 18 },
   rpcUrls: {
     default: { http: ['https://via.viablockchain.dev'] }, // TODO update if needed

@@ -28,12 +28,6 @@ export async function addAndSwitchToViaChain(connector?: Connector): Promise<boo
       blockExplorerUrls: chainConfig.blockExplorerUrls,
     };
 
-    // // Get the provider from the connector or first active connection
-    // const connections = getConnections(wagmiConfig);
-    // const fallbackConnector = connections[0]?.connector;
-    // const chosenConnector = connector ?? fallbackConnector;
-    // const provider: any = await chosenConnector?.getProvider?.();
-
     // Resolve provider in this order: connector arg -> getAccount().connector -> first active connection
     let provider: any | undefined;
     let resolved: 'arg' | 'account' | 'first' | 'none' = 'none';
