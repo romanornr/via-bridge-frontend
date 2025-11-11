@@ -4,8 +4,11 @@ import { useState, useEffect } from "react";
 
 export function useMobile() {
   const [isMobile, setIsMobile] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
+    
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768); // Adjust breakpoint as needed
     };
@@ -20,5 +23,5 @@ export function useMobile() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  return { isMobile };
+  return { isMobile, mounted };
 }

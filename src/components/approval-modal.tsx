@@ -2,14 +2,15 @@
 
 import React, { useMemo, useId, useRef } from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
+import {NetworkInfo, TokenInfo} from "@/services/bridge/types";
 
 export type ApprovalTransactionData = {
   fromAmount: string;
   toAmount?: string;
-  fromToken: string;
-  toToken: string;
-  fromNetwork: "Bitcoin" | "VIA";
-  toNetwork: "Bitcoin" | "VIA";
+  fromToken: TokenInfo;
+  toToken: TokenInfo;
+  fromNetwork: NetworkInfo;
+  toNetwork: NetworkInfo;
   recipientAddress?: string;
   bridgeFee?: string;
   estimatedTime?: string;
@@ -82,11 +83,11 @@ export default function ApprovalModal({
               {/* Route */}
               <div className="bg-slate-50 rounded-xl p-4 mb-6 border border-slate-200 shadow-sm">
                 <div className="flex items-center justify-between">
-                  <div className="text-base font-semibold text-slate-900">{transactionData?.fromNetwork}</div>
+                  <div className="text-base font-semibold text-slate-900">{transactionData?.fromNetwork.displayName}</div>
                   <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                   </svg>
-                  <div className="text-base font-semibold text-slate-900">{transactionData?.toNetwork}</div>
+                  <div className="text-base font-semibold text-slate-900">{transactionData?.toNetwork.displayName}</div>
                 </div>
               </div>
 
@@ -99,7 +100,7 @@ export default function ApprovalModal({
                         ₿
                       </div>
                       <div className="text-base font-bold text-slate-900">
-                        {transactionData?.fromAmount} {transactionData?.fromToken}
+                        {transactionData?.fromAmount} {transactionData?.fromToken.symbol}
                       </div>
                       {fromUsd && (
                         <div className="text-[11px] font-medium text-slate-600">~${fromUsd}</div>
@@ -121,7 +122,7 @@ export default function ApprovalModal({
                         ₿
                       </div>
                       <div className="text-base font-bold text-slate-900">
-                        {(transactionData?.toAmount ?? transactionData?.fromAmount) ?? ""} {transactionData?.toToken}
+                        {(transactionData?.toAmount ?? transactionData?.fromAmount) ?? ""} {transactionData?.toToken.symbol}
                       </div>
                       {toUsd && (
                         <div className="text-[11px] font-medium text-slate-600">~${toUsd}</div>
@@ -141,7 +142,7 @@ export default function ApprovalModal({
                           <div className="text-xs text-slate-500 mt-0.5">Total amount being transferred</div>
                         </div>
                         <div className="text-base font-semibold text-slate-900 tabular-nums">
-                          {transactionData?.fromAmount} {transactionData?.fromToken}
+                          {transactionData?.fromAmount} {transactionData?.fromToken.symbol}
                         </div>
                     </div>
                       {transactionData?.networkFee && (
@@ -160,7 +161,7 @@ export default function ApprovalModal({
                             <div className="text-xs text-green-700 mt-0.5">Amount credited to destination address</div>
                           </div>
                           <div className="text-lg font-bold text-green-900 tabular-nums">
-                            {transactionData?.toAmount} {transactionData?.toToken}
+                            {transactionData?.toAmount} {transactionData?.toToken.symbol}
                           </div>
                         </div>
                       )}

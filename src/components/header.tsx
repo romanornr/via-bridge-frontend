@@ -22,7 +22,7 @@ import {
 
 
 export default function Header() {
-  const { isMobile } = useMobile();
+  const { isMobile, mounted } = useMobile();
   const {
     isXverseConnected,
     isMetamaskConnected,
@@ -211,7 +211,45 @@ export default function Header() {
         </div>
 
         <div className="flex items-center gap-2">
-          {isMobile ? (
+          {!mounted ? (
+            // Show desktop layout during SSR/hydration to prevent mismatch
+            <div className="flex items-center gap-2">
+              {isXverseConnected ? (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="flex items-center gap-2"
+                  onClick={handleDisconnectXverse}
+                >
+                  <div className={`w-2 h-2 ${isCorrectBitcoinNetwork ? 'bg-green-500' : 'bg-amber-500'} rounded-full`}></div>
+                  <span>BTC: {bitcoinAddress?.slice(0, 6)}...{bitcoinAddress?.slice(-4)}</span>
+                </Button>
+              ) : (
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={handleConnectXverse}
+                  disabled={isConnectingXverse}
+                >
+                  {isConnectingXverse ? "Connecting..." : "Connect Xverse"}
+                </Button>
+              )}
+              
+              {isMetamaskConnected ? (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="flex items-center gap-2"
+                  onClick={handleDisconnectMetamask}
+                >
+                  <div className={`w-2 h-2 ${isCorrectViaNetwork ? 'bg-green-500' : 'bg-amber-500'} rounded-full`}></div>
+                  <span>VIA: {viaAddress?.slice(0, 6)}...{viaAddress?.slice(-4)}</span>
+                </Button>
+              ) : (
+                <EVMSelectorButton />
+              )}
+            </div>
+          ) : isMobile ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm" className="h-8 flex items-center gap-1.5">

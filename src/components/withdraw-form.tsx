@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { GetCurrentRoute} from "@/services/bridge/routes";
+import { BRIDGE_CONFIG } from "@/services/config";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -21,6 +23,8 @@ import { useDebounce } from "@/hooks/useDebounce";
 import NetworkRouteBanner from "@/components/ui/network-route-banner";
 import AddressFieldWithWallet from "@/components/address-field-with-wallet";
 import { verifyBitcoinAddress } from "@/utils/address";
+import ApprovalModal from "@/components/approval-modal";
+import { L1_BTC_DECIMALS } from "@/services/constants";
 
 interface WithdrawFormProps {
   viaAddress: string | null
@@ -54,6 +58,18 @@ export default function WithdrawForm({ viaAddress, onTransactionSubmitted }: Wit
   const [balance, setBalance] = useState<string | null>(null);
   const [isLoadingBalance, setIsLoadingBalance] = useState(false);
   const [amount, setAmount] = useState("0");
+  const [approvalOpen, setApprovalOpen] = useState(false);
+
+  // Get the current bridge route configuration
+  const bridgeRoute = GetCurrentRoute('withdraw', BRIDGE_CONFIG.defaultNetwork);
+  const { fromNetwork, toNetwork, token } = bridgeRoute;
+
+  // Calculate net BTC amount after fee estimation
+  const calculateNetBTCAmount = (amountBtc: string, fee: number) => {
+    const amountSats = toL1Amount(amountBtc);
+    const netStats = amountSats - fee;
+    return (netStats / Math.pow(10, L1_BTC_DECIMALS)).toFixed(8);
+  };
 
   // Import the wallet store to get the Bitcoin address
   const { addLocalTransaction, isLoadingFeeEstimation, feeEstimation, fetchFeeEstimation, resetFeeEstimation } = useWalletStore();
@@ -450,6 +466,22 @@ export default function WithdrawForm({ viaAddress, onTransactionSubmitted }: Wit
           </Button>
         </form>
       </Form>
+      <ApprovalModal
+        open={approvalOpen}
+        onOpenChange={setApprovalOpen}
+        direction="withdraw"
+        title='Waiting for approval'
+        transactionData={{
+          fromAmount: form.getValues("amount") || "0",
+          toAmount: feeEstimation ? calculateNetBTCAmount(form.getValues("amount") || "0", feeEstimation.fee): undefined,
+          fromNetwork: fromNetwork,
+          toToken: token,
+          toNetwork: toNetwork,
+          fromToken: token,
+          recipientAddress: form.getValues("recipientBitcoinAddress") || "",
+          networkFee: feeEstimation ? `${feeEstimation.fee.toLocaleString()} sats` : undefined,
+        }}
+        />
     </div>
   );
 }

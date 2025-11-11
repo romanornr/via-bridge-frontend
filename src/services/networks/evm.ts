@@ -1,3 +1,5 @@
+import { ViaMainnet, ViaTestnet } from '@/lib/wagmi/chains';
+
 /**
  * VIA EVM Network identities
  *
@@ -31,6 +33,9 @@ export type AddEthereumChainParameters = {
 /**
  * VIA EVM network configurations for adding/switching chains in EVM wallets.
  *
+ * Generated from Wagmi chain definitions (ViaTestnet, ViaMainnet) to ensure consistency
+ * across the application. REGTEST remains custom for local development.
+ *
  * Used by wagmi/EIP-1193 providers (Metamask, Rabby wallet, Rainbow, WalletConnect, etc.) to add/switch to VIA networks.
  *
  * @example
@@ -39,6 +44,21 @@ export type AddEthereumChainParameters = {
  * await provider.request({ method: 'wallet_addEthereumChain', params: [params] });
  */
 export const VIA_EVM_CHAIN_PARAMS: Record<ViaNetwork, AddEthereumChainParameters> = {
+  [ViaNetwork.TESTNET]: {
+    chainId: `0x${ViaTestnet.id.toString(16)}`,
+    chainName: ViaTestnet.name,
+    nativeCurrency: ViaTestnet.nativeCurrency,
+    rpcUrls: [...ViaTestnet.rpcUrls.default.http],
+    blockExplorerUrls: [ViaTestnet.blockExplorers.default.url],
+  },
+  [ViaNetwork.MAINNET]: {
+    chainId: `0x${ViaMainnet.id.toString(16)}`,
+    chainName: ViaMainnet.name,
+    nativeCurrency: ViaMainnet.nativeCurrency,
+    rpcUrls: [...ViaMainnet.rpcUrls.default.http],
+    blockExplorerUrls: [ViaMainnet.blockExplorers.default.url],
+  },
+  // REGTEST remains custom for local development
   [ViaNetwork.REGTEST]: {
     chainId: "0x6287",
     chainName: "VIA Network",
@@ -46,18 +66,4 @@ export const VIA_EVM_CHAIN_PARAMS: Record<ViaNetwork, AddEthereumChainParameters
     rpcUrls: ["http://0.0.0.0:3050"],
     blockExplorerUrls: ["http://0.0.0.0:4000"],
   },
-  [ViaNetwork.TESTNET]: {
-    chainId: "0x6287",
-    chainName: "Via Network Sepolia",
-    nativeCurrency: { name: "BTC", symbol: "BTC", decimals: 18 },
-    rpcUrls: ["https://via.testnet.viablockchain.dev"],
-    blockExplorerUrls: ["https://testnet.blockscout.onvia.org"],
-  },
-  [ViaNetwork.MAINNET]: {
-    chainId: "0x1467",
-    chainName: "Via Network Sepolia",
-    nativeCurrency: { name: "BTC", symbol: "BTC", decimals: 18 },
-    rpcUrls: ["http://localhost:3050"],
-    blockExplorerUrls: ["http://0.0.0.0:4000"],
-  }
 } as const;

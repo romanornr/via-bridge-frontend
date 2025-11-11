@@ -21,9 +21,11 @@ export enum Layer {
  * based on the selected Bitcoin network environment. (NEXT_PUBLIC_NETWORK)
  *
  * @example
- * /Get VIA network for current BTC environment
+ * ```typescript
+ * // Get VIA network for current BTC environment
  * const viaNetwork = BTC_ENV_TO_VIA_NETWORK[BRIDGE_CONFIG.defaultNetwork];
  * const evmParams = VIA_EVM_CHAIN_PARAMS[viaNetwork];
+ * ```
  */
 export const BTC_ENV_TO_VIA_NETWORK = {
   [BitcoinNetwork.MAINNET]: ViaNetwork.MAINNET,
@@ -44,9 +46,22 @@ export const VIA_NETWORK_CONFIG: Record<BitcoinNetwork, (typeof VIA_EVM_CHAIN_PA
  * @returns AddEthereumChainParameters object for wallet_addEthereumChain
  *
  * @example
- * /Get params for the current environment (from NEXT_PUBLIC_NETWORK)
- * const currentParms = GetNetworkConfig();
- * await provider.request({ method: 'wallet_addEthereumChain', params: [currentParms] });
+ * ```typescript
+ * // Get params for the current environment (from NEXT_PUBLIC_NETWORK)
+ * const currentParams = getNetworkConfig();
+ * // currentParams = AddEthereumChainParameters
+ * //
+ * // e.g., for TESTNET:
+ * // {
+ * //   chainId: "0x6287",
+ * //   chainName: "Via Network Sepolia",
+ * //   nativeCurrency: { name: "BTC", symbol: "BTC", decimals: 18 },
+ * //   rpcUrls: ["https://via.testnet.viablockchain.dev"],
+ * //   blockExplorerUrls: ["https://testnet.blockscout.onvia.org"],
+ * // }
+ * 
+ * await provider.request({ method: 'wallet_addEthereumChain', params: [currentParams] });
+ * ```
  */
 export const getNetworkConfig = () => {
   return VIA_NETWORK_CONFIG[env().NEXT_PUBLIC_NETWORK];
@@ -59,8 +74,10 @@ export const getNetworkConfig = () => {
  * @param btcEnv - The Bitcoin network environment (MAINNET, TESTNET, or REGTEST)
  * @returns AddEthereumChainParameters object for wallet_addEthereumChain
  * @example
+ * ```typescript
  * const params = getViaEVMParamsForBTCEnv(BitcoinNetwork.TESTNET);
  * await provider.request({ method: 'wallet_addEthereumChain', params: [params] });
+ * ```
  */
 export const getViaEVMParamsForBTCEnv = (btcEnv: BitcoinNetwork) => {
   return VIA_NETWORK_CONFIG[btcEnv];
@@ -90,14 +107,17 @@ export const API_CONFIG = {
 } as const;
 
 /**
- * Bitcoin API endpoint for mempools pace queries and transaction explorer
+ * Bitcoin API endpoint for mempool space queries and transaction explorer
  * Contains primary and fallback URL endpoints for each Bitcoin network environment block explorer URLs for each network
  *
  * @example
- * /Fetch UTXOs from the primary endpoint
- *
+ * ```typescript
+ * // Fetch UTXOs from the primary endpoint
  * const response = await fetch(`${BTC_API.primary[BitcoinNetwork.TESTNET]}/address/${address}/utxo`);
- *  window.open(`${BTC_API.explorer[BitcoinNetwork.TESTNET]}${txHash}`);
+ * 
+ * // Open transaction in explorer
+ * window.open(`${BTC_API.explorer[BitcoinNetwork.TESTNET]}${txHash}`);
+ * ```
  */
 export const BTC_API = API_CONFIG.endpoints.bitcoin;
 

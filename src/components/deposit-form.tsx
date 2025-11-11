@@ -22,6 +22,9 @@ import { useDebounce } from "@/hooks/useDebounce";
 import NetworkRouteBanner from "@/components/ui/network-route-banner";
 import AddressFieldWithWallet from "@/components/address-field-with-wallet";
 import { toL1Amount } from "@/helpers";
+import ApprovalModal from "@/components/approval-modal";
+import { GetCurrentRoute } from "@/services/bridge/routes";
+import { L1BTCDecimals } from "@/services/constants";
 
 interface DepositFormProps {
   bitcoinAddress: string | null
@@ -90,6 +93,18 @@ export default function DepositForm({ bitcoinAddress, bitcoinPublicKey, onTransa
   const [isSuccess, setIsSuccess] = useState(false);
   const [balance, setBalance] = useState<string | null>(null);
   const [isLoadingBalance, setIsLoadingBalance] = useState(false);
+  const [approvalOpen, setApprovalOpen] = useState(false);
+
+  // Get the current bridge route configuration
+  const bridgeRoute  = GetCurrentRoute('deposit', BRIDGE_CONFIG.defaultNetwork);
+  const { fromNetwork, toNetwork, token } = bridgeRoute;
+
+  // Calculate net BTC amount after fee estimation
+  const calculateNetBTCAmount = (amountBtc: string, fee: number) => {
+    const amountSats = toL1Amount(amountBtc);
+    const netSats = amountSats - fee;
+    return (netSats / Math.pow(10, L1_BTC_DECIMALS)).toFixed(8);
+  };
 
   // Import the wallet store to get the VIA address
   const { addLocalTransaction, isLoadingFeeEstimation, feeEstimation, fetchDepositFeeEstimation, resetFeeEstimation } = useWalletStore();
@@ -200,6 +215,8 @@ export default function DepositForm({ bitcoinAddress, bitcoinPublicKey, onTransa
       const normalizedAddress = getAddress(values.recipientViaAddress); // EIP-55 checksummed 0x address
       const recipientAddress = normalizedAddress.slice(2); // bridge API expects a raw 20-byte hex string (no "0x"), so we strip the prefix.
 
+      setApprovalOpen(true);
+
       // Execute the deposit
       const result = await executeDeposit({
         bitcoinAddress,
@@ -245,6 +262,7 @@ export default function DepositForm({ bitcoinAddress, bitcoinPublicKey, onTransa
       }
     } finally {
       setIsSubmitting(false);
+      setApprovalOpen(false);
     }
   }
 
@@ -546,6 +564,24 @@ export default function DepositForm({ bitcoinAddress, bitcoinPublicKey, onTransa
           </div>
         </form>
       </Form>
+
+      <ApprovalModal
+        open={approvalOpen}
+        onOpenChange={setApprovalOpen}
+        direction="deposit"
+        title="Waiting for Approval"
+        transactionData={{
+          fromAmount: form.getValues("amount") || "0",
+          toAmount: feeEstimation ? calculateNetBTCAmount(form.getValues("amount") || "0", feeEstimation.fee): undefined,
+          fromToken: token,
+          toToken: token,
+          fromNetwork: fromNetwork,
+          toNetwork: toNetwork,
+          recipientAddress: form.getValues("recipientViaAddress") || "",
+          networkFee: feeEstimation ? `${feeEstimation.fee.toLocaleString()} sats` : undefined,
+          estimatedTime: "15-30 minutes",
+        }}
+      />
     </div>
   );
 }
