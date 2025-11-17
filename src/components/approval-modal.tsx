@@ -21,6 +21,7 @@ type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   direction: "deposit" | "withdraw";
+  onCancel?: () => void;
   title?: string;
   walletName?: string; // e.g. "MetaMask", "Rabby", "Xverse"
   overlay?: "transparent" | "dim";
@@ -33,6 +34,7 @@ export default function ApprovalModal({
                                         onOpenChange,
                                         title = "Waiting for confirmation",
                                         walletName = "Wallet",
+                                        onCancel,
                                         overlay = "dim",
                                         transactionData,
                                         btcPriceUsd,
@@ -54,6 +56,18 @@ export default function ApprovalModal({
 
   // Overlay: dim (80% opacity) or transparent
   const overlayClass = overlay === "dim" ? "bg-black/80" : "bg-transparent";
+  //
+  // const handleCancel = () => {
+  //   onCancel  ? onCancel()  : onOpenChange(false);
+  // };
+
+  const handleCancel = () => {
+    if (onCancel) {
+      onCancel();
+    } else {
+      onOpenChange(false);
+    }
+  };
 
   return (
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
@@ -207,7 +221,8 @@ export default function ApprovalModal({
                 </div>
                 <div className="text-sm text-slate-900 font-medium flex-1 truncate">Approve in {walletName}</div>
                 <button
-                  onClick={() => onOpenChange(false)}
+                  //onClick={() => onOpenChange(false)}
+                  onClick={handleCancel}
                   ref={closeBtnRef}
                   className="px-4 py-2 rounded-lg bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 transition-colors font-semibold shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                 >

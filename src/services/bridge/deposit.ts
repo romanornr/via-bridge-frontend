@@ -6,6 +6,7 @@ import { type UserAddress, BitcoinNetwork } from "../bitcoin/types";
 import { BRIDGE_CONFIG } from "@/services/config";
 import { getTransactionExplorerUrl } from "../bitcoin/transaction";
 import { L1_BTC_DECIMALS } from "../constants";
+import { abortablePromise } from "@/utils/promise";
 
 // Interface for deposit parameters
 export interface DepositParams {
@@ -14,6 +15,7 @@ export interface DepositParams {
   recipientViaAddress: string
   amountInBtc: number
   network?: BitcoinNetwork
+  signal?: AbortSignal
 }
 
 // Interface for deposit result
@@ -57,8 +59,20 @@ export async function executeDeposit(params: DepositParams): Promise<DepositResu
   const bitcoinNetworkType =
     network === BitcoinNetwork.TESTNET ? BitcoinNetworkType.Testnet4 : BitcoinNetworkType.Mainnet;
 
-  // Request signature from Xverse wallet
-  const signedTxResponse = await new Promise<any>((resolve, reject) => {
+  // Request signature from Xverse wallet with abort support
+  const signingPromise = new Promise<any>((resolve, reject) => {
+    // Check if already aborted before starting
+    if (params.signal?.aborted) {
+      reject(params.signal?.reason ?? new Error("Operation aborted"));
+      return;
+    }
+
+    // Set up abort listener (no programmatic cancel in sats-connect)
+    const onAbort = () => {
+      reject(params.signal?.reason ?? new Error("Operation aborted"));
+    };
+    params.signal?.addEventListener("abort", onAbort, { once: true });
+
     signTransaction({
       payload: {
         network: { type: bitcoinNetworkType },
@@ -66,14 +80,20 @@ export async function executeDeposit(params: DepositParams): Promise<DepositResu
         psbtBase64,
         inputsToSign: [{
           address: params.bitcoinAddress,
-          signingIndexes: Array.from({ length: inputCount }, (_, i) => i), // Sign all inputs
+          signingIndexes: Array.from({ length: inputCount }, (_, i) => i),
         }],
         broadcast: false,
       },
-      onFinish: resolve,
-      onCancel: () => reject(new Error("Transaction signing cancelled")),
+      onFinish: (response) => {
+        resolve(response);
+      },
+      onCancel: () => {
+        reject(new Error("Transaction signing cancelled in wallet"));
+      },
     });
   });
+
+  const signedTxResponse = await abortablePromise(signingPromise, params.signal);
 
   // Finalize and broadcast
   const rawTx = await finalizeTransaction(signedTxResponse.psbtBase64);

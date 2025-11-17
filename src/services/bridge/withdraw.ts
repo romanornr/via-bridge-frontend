@@ -6,7 +6,9 @@ import { getNetworkConfig } from "../config";
 import {getPreferredWeb3ProviderAsync} from "@/utils/ethereum-provider";
 import { useWalletStore } from "@/store/wallet-store";
 import {eip6963Store} from "@/utils/eip6963-provider";
-import { withTimeout } from "@/utils/promise";
+import { withTimeout, abortablePromise, isAbortError } from "@/utils/promise";
+import {Simulate} from "react-dom/test-utils";
+import abort = Simulate.abort;
 
 const CONNECT_TIMEOUT_MS = 10000; // 10-second timeout
 const BALANCE_TIMEOUT_MS = 5000; // 5-second timeout
@@ -15,6 +17,7 @@ const SIGN_TIMEOUT_MS = 20000;  // 20-second timeout
 export interface WithdrawParams {
   amount: string;
   recipientBitcoinAddress: string;
+  signal?: AbortSignal;
 }
 
 export interface WithdrawResult {
@@ -40,6 +43,9 @@ export interface WithdrawResult {
  */
 export async function executeWithdraw(params: WithdrawParams): Promise<WithdrawResult> {
   try {
+    // check if already abborted
+    (params.signal as any)?.throwIfAborted();
+
     const { selectedWallet, viaAddress } = useWalletStore.getState();
     // Prefer active wagmi connector and fallback to EIP-6963 provider
     let providerApi: EIP1193Provider | null = null;
@@ -53,7 +59,6 @@ export async function executeWithdraw(params: WithdrawParams): Promise<WithdrawR
         providerApi = await activeConnector.getProvider();
       }
     } catch {}
-
     if (!providerApi) {
       let injected: { provider: EIP1193Provider; name: string; rdns: string} | null = null;
       if (selectedWallet) {
@@ -152,11 +157,14 @@ export async function executeWithdraw(params: WithdrawParams): Promise<WithdrawR
       }
     } catch {}
 
-    const tx = await withTimeout(
-      signer.withdraw({to: params.recipientBitcoinAddress,  amount: l2SatsAmount,}),
-      signTimeOutMs,
-      timeOutMsg
-    );
+    const withdrawPromise = signer.withdraw({
+      to: params.recipientBitcoinAddress,
+      amount: l2SatsAmount,
+    });
+
+    const abortableWithdraw = abortablePromise(withdrawPromise, params.signal);
+    const tx = await withTimeout(abortableWithdraw, signTimeOutMs, timeOutMsg);
+    // Note: if abort happens after tx is obtained, proceed and surface tx to user
 
     const txHash = tx.hash;
     const explorerBase = getNetworkConfig().blockExplorerUrls?.[0] ?? "https://testnet.blockscout.onvia.org";
@@ -168,7 +176,9 @@ export async function executeWithdraw(params: WithdrawParams): Promise<WithdrawR
     };
   } catch (error: any) {
     console.error("Withdrawal error:", error);
-    if (error?.code === 4001) {
+    if (isAbortError(error)) {
+      toast.info("Withdrawal cancelled", {description: "You cancelled the withdrawal request in your wallet.",});
+    } else if (error?.code === 4001) {
       toast.error("Request rejected", {description: "You rejected the request in your wallet.",});
     } else {
       toast.error("Withdrawal failed", {description: (error as Error)?.message || "There was an error processing your withdrawal. Please try again.",});
