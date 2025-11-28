@@ -1,14 +1,12 @@
 import { toast } from "sonner";
 import { BrowserProvider, Provider, Signer } from "via-ethers";
-import { ethers } from "ethers";
+import { ethers, isError } from "ethers";
 import { L2_BTC_DECIMALS } from "../constants";
 import { getNetworkConfig } from "../config";
 import {getPreferredWeb3ProviderAsync} from "@/utils/ethereum-provider";
 import { useWalletStore } from "@/store/wallet-store";
 import {eip6963Store} from "@/utils/eip6963-provider";
 import { withTimeout, abortablePromise, isAbortError } from "@/utils/promise";
-import {Simulate} from "react-dom/test-utils";
-import abort = Simulate.abort;
 
 const CONNECT_TIMEOUT_MS = 10000; // 10-second timeout
 const BALANCE_TIMEOUT_MS = 5000; // 5-second timeout
@@ -178,7 +176,7 @@ export async function executeWithdraw(params: WithdrawParams): Promise<WithdrawR
     console.error("Withdrawal error:", error);
     if (isAbortError(error)) {
       toast.info("Withdrawal cancelled", {description: "You cancelled the withdrawal request in your wallet.",});
-    } else if (error?.code === 4001) {
+    } else if (isError(error, "ACTION_REJECTED")) {
       toast.error("Request rejected", {description: "You rejected the request in your wallet.",});
     } else {
       toast.error("Withdrawal failed", {description: (error as Error)?.message || "There was an error processing your withdrawal. Please try again.",});
