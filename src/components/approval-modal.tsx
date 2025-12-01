@@ -3,6 +3,7 @@
 import React, { useMemo, useId, useRef } from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import {NetworkInfo, TokenInfo} from "@/services/bridge/types";
+import { TransactionSummaryCard } from "@/components/bridge/transaction-summary-card";
 
 export type ApprovalTransactionData = {
   fromAmount: string;
@@ -56,10 +57,6 @@ export default function ApprovalModal({
 
   // Overlay: dim (80% opacity) or transparent
   const overlayClass = overlay === "dim" ? "bg-black/80" : "bg-transparent";
-  //
-  // const handleCancel = () => {
-  //   onCancel  ? onCancel()  : onOpenChange(false);
-  // };
 
   const handleCancel = () => {
     if (onCancel) {
@@ -105,110 +102,80 @@ export default function ApprovalModal({
                 </div>
               </div>
 
-                {/*Amount*/}
-                <div className="space-y-4 mb-6">
-                  <div className="grid grid-cols-3 gap-4">
-                    {/* From */}
-                    <div className="text-center">
-                      <div className="w-12 h-12 mx-auto rounded-full bg-slate-900 text-white flex items-center justify-center text-lg font-bold mb-2 shadow-sm" aria-hidden>
-                        ₿
-                      </div>
-                      <div className="text-base font-bold text-slate-900">
-                        {transactionData?.fromAmount} {transactionData?.fromToken.symbol}
-                      </div>
-                      {fromUsd && (
-                        <div className="text-[11px] font-medium text-slate-600">~${fromUsd}</div>
-                      )}
+              {/*Amount*/}
+              <div className="space-y-4 mb-6">
+                <div className="grid grid-cols-3 gap-4">
+                  {/* From */}
+                  <div className="text-center">
+                    <div className="w-12 h-12 mx-auto rounded-full bg-slate-900 text-white flex items-center justify-center text-lg font-bold mb-2 shadow-sm" aria-hidden>
+                      ₿
                     </div>
-
-                    {/* Arrow */}
-                    <div className="flex items-center justify-center">
-                      <div className="w-9 h-9 bg-white border border-slate-200 shadow-sm rounded-full flex items-center justify-center">
-                        <svg className="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                        </svg>
-                      </div>
+                    <div className="text-base font-bold text-slate-900">
+                      {transactionData?.fromAmount} {transactionData?.fromToken.symbol}
                     </div>
+                    {fromUsd && (
+                      <div className="text-[11px] font-medium text-slate-600">~${fromUsd}</div>
+                    )}
+                  </div>
 
-                    {/*To*/}
-                    <div className="text-center">
-                      <div className="w-12 h-12 mx-auto rounded-full bg-slate-800 text-white flex items-center justify-center text-base font-bold mb-2 shadow-sm" aria-hidden>
-                        ₿
-                      </div>
-                      <div className="text-base font-bold text-slate-900">
-                        {(transactionData?.toAmount ?? transactionData?.fromAmount) ?? ""} {transactionData?.toToken.symbol}
-                      </div>
-                      {toUsd && (
-                        <div className="text-[11px] font-medium text-slate-600">~${toUsd}</div>
-                      )}
+                  {/* Arrow */}
+                  <div className="flex items-center justify-center">
+                    <div className="w-9 h-9 bg-white border border-slate-200 shadow-sm rounded-full flex items-center justify-center">
+                      <svg className="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                      </svg>
                     </div>
                   </div>
 
-                  {/*Summary*/}
-                  <div className="border border-slate-200 rounded-md overflow-hidden">
-                    <div className="border-b border-slate-200 bg-slate-50 px-4 py-2.5">
-                      <h3 className="text-sm font-semibold text-slate-900">Transaction Summary</h3>
+                  {/*To*/}
+                  <div className="text-center">
+                    <div className="w-12 h-12 mx-auto rounded-full bg-slate-800 text-white flex items-center justify-center text-base font-bold mb-2 shadow-sm" aria-hidden>
+                      ₿
                     </div>
-                    <div className="divide-y divide-slate-200">
-                      <div className="px-4 py-3 flex items-center justify-between">
-                        <div>
-                          <div className="text-sm font-medium text-slate-900">Transfer Amount</div>
-                          <div className="text-xs text-slate-500 mt-0.5">Total amount being transferred</div>
-                        </div>
-                        <div className="text-base font-semibold text-slate-900 tabular-nums">
-                          {transactionData?.fromAmount} {transactionData?.fromToken.symbol}
-                        </div>
+                    <div className="text-base font-bold text-slate-900">
+                      {(transactionData?.toAmount ?? transactionData?.fromAmount) ?? ""} {transactionData?.toToken.symbol}
                     </div>
-                      {transactionData?.networkFee && (
-                        <div className="px-4 py-3 flex items-center justify-between">
-                          <div>
-                            <div className="text-sm font-medium text-slate-900">Network Fee</div>
-                            <div className="text-xs text-slate-500 mt-0.5">Required for processing</div>
-                          </div>
-                          <div className="text-base font-semibold text-slate-900 tabular-nums">{transactionData?.networkFee}</div>
-                        </div>
-                      )}
-                      {transactionData?.toAmount && (
-                        <div className="px-4 py-3 flex items-center justify-between bg-green-50">
-                          <div>
-                            <div className="text-sm font-semibold text-green-900">Net Amount Received</div>
-                            <div className="text-xs text-green-700 mt-0.5">Amount credited to destination address</div>
-                          </div>
-                          <div className="text-lg font-bold text-green-900 tabular-nums">
-                            {transactionData?.toAmount} {transactionData?.toToken.symbol}
-                          </div>
-                        </div>
-                      )}
-                  </div>
-                </div>
-
-                  {/* Details */}
-                  <div className="grid gap-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm font-medium text-slate-700">Route</span>
-                      <span className="inline-flex items-center gap-2 text-xs font-semibold text-green-700 bg-green-50 rounded-full px-3 py-1 border border-green-200 shadow-sm">Optimal</span>
-                    </div>
-                    {transactionData?.recipientAddress && (
-                      <div className="flex justify-between items-center gap-3">
-                        <span className="text-sm font-medium text-slate-700">Recipient</span>
-                        <span className="text-sm font-semibold text-slate-900 font-mono">{transactionData?.recipientAddress}</span>
-                      </div>
-                    )}
-                    {transactionData?.estimatedTime && (
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium text-slate-700">Est. time</span>
-                        <span className="text-sm font-semibold text-slate-900">{transactionData?.estimatedTime}</span>
-                      </div>
-                    )}
-                    {transactionData?.bridgeFee && (
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium text-slate-700">Bridge Fee</span>
-                        <span className="text-sm font-semibold text-slate-900">{transactionData?.bridgeFee}</span>
-                      </div>
+                    {toUsd && (
+                      <div className="text-[11px] font-medium text-slate-600">~${toUsd}</div>
                     )}
                   </div>
                 </div>
+
+                {/*Summary*/}
+                <TransactionSummaryCard
+                  amount={transactionData?.fromAmount || "0"}
+                  fee={transactionData?.networkFee || "0 sats"}
+                  netReceive={transactionData?.toAmount || "0"}
+                  unit={transactionData?.fromToken.symbol || "BTC"}
+                />
               </div>
+
+              {/* Details */}
+              <div className="grid gap-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-slate-700">Route</span>
+                  <span className="inline-flex items-center gap-2 text-xs font-semibold text-green-700 bg-green-50 rounded-full px-3 py-1 border border-green-200 shadow-sm">Optimal</span>
+                </div>
+                {transactionData?.recipientAddress && (
+                  <div className="flex justify-between items-center gap-3">
+                    <span className="text-sm font-medium text-slate-700">Recipient</span>
+                    <span className="text-sm font-semibold text-slate-900 font-mono">{transactionData?.recipientAddress}</span>
+                  </div>
+                )}
+                {transactionData?.estimatedTime && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium text-slate-700">Est. time</span>
+                    <span className="text-sm font-semibold text-slate-900">{transactionData?.estimatedTime}</span>
+                  </div>
+                )}
+                {transactionData?.bridgeFee && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium text-slate-700">Bridge Fee</span>
+                    <span className="text-sm font-semibold text-slate-900">{transactionData?.bridgeFee}</span>
+                  </div>
+                )}
+              </div>
+            </div>
 
             {/* Sticky actions */}
             <div className="sticky bottom-0 bg-white pt-4 pb-2 border-t border-slate-200">
@@ -221,7 +188,6 @@ export default function ApprovalModal({
                 </div>
                 <div className="text-sm text-slate-900 font-medium flex-1 truncate">Approve in {walletName}</div>
                 <button
-                  //onClick={() => onOpenChange(false)}
                   onClick={handleCancel}
                   ref={closeBtnRef}
                   className="px-4 py-2 rounded-lg bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 transition-colors font-semibold shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
