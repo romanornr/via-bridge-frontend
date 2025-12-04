@@ -13,3 +13,4 @@ export { AmountSlider } from "./amount-slider";
 export { TransactionSummaryCard } from "./transaction-summary-card";
 export { RecipientAddressSection } from "./recipient-address-section";
 export { BridgeSubmitButton } from "./bridge-submit-button";
+export { BridgeForm } from "./bridge-form";
