@@ -3,15 +3,15 @@ import { getBitcoinBalance} from "@/services/bitcoin/balance";
 import { getViaBalance} from "@/services/via/balance";
 import { L1_BTC_DECIMALS} from "@/services/constants";
 import { toast } from "sonner";
-import type { Token } from "@/services/bridge/tokens";
+import type { TokenInfo } from "@/services/bridge/types";
 
 interface UseBalanceOptions {
   /** The type of network to fetch balance from */
   networkType: "bitcoin" | "evm";
   /** The wallet address to fetch balance for */
-  address: string;
+  address: string | null;
   /** The token to fetch for (determines the decimals and fetch method */
-  token: Token;
+  token: TokenInfo;
 }
 
 interface UseBalanceResult {
@@ -78,7 +78,7 @@ export function useBalance({ networkType, address, token} : UseBalanceOptions): 
       }
     } catch (error) {
       console.error("Error fetching balance", error);
-      toast.error("Failed to fetch balance", { description: `Could not fetch  ${token.symbol} `})
+      toast.error("Failed to fetch balance", { description: `Could not fetch  ${token.symbol} `});
       setBalance(null);
       setRawBalance(null);
     } finally {

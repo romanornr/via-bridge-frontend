@@ -6,6 +6,7 @@ import { executeDeposit } from "@/services/bridge/deposit";
 import { executeWithdraw} from "@/services/bridge/withdraw";
 import {useState, useMemo, useEffect} from "react";
 import { cn } from "@/lib/utils";
+import { useBalance} from "@/hooks/useBalance";
 import { GetCurrentRoute } from "@/services/bridge/routes";
 import { BRIDGE_CONFIG } from "@/services/config";
 import { useWalletStore } from "@/store/wallet-store";
@@ -57,12 +58,10 @@ export function BridgeForm({ initialMode = "deposit", className}:  BridgeFormPro
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [abortController, setAbortController] = useState<AbortController | null>(null);
   const [approvalOpen, setApprovalOpen] = useState(false);
-  const [balance, setBalance] = useState<string | null>(null);
 
   // Get wallet data from store
   const { bitcoinAddress, bitcoinPublicKey } = useWalletStore();
-
-  const isLoadingBalance = false;
+  const { viaAddress } = useWalletStore();
 
   const {
     //isLoadingFeeEstimation,
@@ -92,6 +91,15 @@ export function BridgeForm({ initialMode = "deposit", className}:  BridgeFormPro
   const route = useMemo(() => GetCurrentRoute(mode, BRIDGE_CONFIG.defaultNetwork), [mode]);
   const unit = route.token.symbol;
 
+
+  // Fetch balance using the hook
+  const { balance, isLoading: isLoadingBalance } = useBalance({
+    networkType: route.fromNetwork.type,
+    address: route.fromNetwork.type === "bitcoin" ? bitcoinAddress : viaAddress,
+    token: route.token,
+  });
+
+
   // parse amount to number
   const amountNumber = useMemo(() => {
     const n = parseFloat(amount);
@@ -100,7 +108,9 @@ export function BridgeForm({ initialMode = "deposit", className}:  BridgeFormPro
 
   // calculate max amount (balance - fee reserve for deposits)
   const maxAmount = useMemo(() => {
+    if (!balance) return 0;
     const bal = parseFloat(balance);
+    if (!Number.isFinite(bal)) return 0;
     const feeReserve = mode === "deposit" ? 0.001 : 0;
     return Math.max(0, bal - feeReserve);
   }, [balance, mode]);
