@@ -1,6 +1,5 @@
 // src/components/bridge/bridge-form.tsx
 "use client";
-
 import {useState, useMemo, useEffect} from "react";
 import { cn } from "@/lib/utils";
 import { useBridgeSubmit } from "@/hooks/useBridgeSubmit";
@@ -105,7 +104,6 @@ export function BridgeForm({ initialMode = "deposit", className}:  BridgeFormPro
     token: route.token,
   });
 
-
   // parse amount to number
   const amountNumber = useMemo(() => {
     const n = parseFloat(amount);
@@ -154,11 +152,12 @@ export function BridgeForm({ initialMode = "deposit", className}:  BridgeFormPro
       : !hasAmount
         ? "Enter transfer amount"
         : isAmountBelowMin
-          ? `Minimum amount is ${minAmount} BTC (${minAmountSats.toLocaleString()} sats)`
+          ? `Minimum amount is ${minAmount} BTC (${minAmountSats.toLocaleString()} sats)` // TODO support token symbol instead of BTC
           : "";
 
   const handleChangeMode = (newMode: BridgeMode) => {
     setMode(newMode);
+    setAmount("");
     setRecipientAddress("");
   };
 
@@ -172,10 +171,11 @@ export function BridgeForm({ initialMode = "deposit", className}:  BridgeFormPro
 
   const handleSwap = () => {
     setMode(mode === "deposit" ? "withdraw" : "deposit");
+    setAmount("");
     setRecipientAddress("");
   };
 
-// Handle reset after successful transaction
+// Handle reset after a successful transaction
   const handleReset = () => {
     resetSubmit();
     setAmount("");
