@@ -206,8 +206,8 @@ export function BridgeForm({ initialMode = "deposit", className}:  BridgeFormPro
   };
 
   return (
-    <div className={cn("min-h-screen bg-white flex items-center justify-center p-6", className)}>
-      <div className="w-full max-w-3xl">
+    <div className={cn("w-full flex justify-center py-8 px-4", className)}>
+      <div className="w-full max-w-4xl">
       {/*Mode tabs*/}
       <BridgeModeTabs mode={mode} onModeChange={handleChangeMode} />
 

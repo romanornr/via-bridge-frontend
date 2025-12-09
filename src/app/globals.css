@@ -36,10 +36,12 @@
   }
 }
 
-/* Add this to your globals.css file */
+/* Allow natural page scrolling */
 @layer base {
-  html, body {
+  html {
     height: 100%;
-    overflow: hidden;
+  }
+  body {
+    min-height: 100%;
   }
 }
