@@ -7,6 +7,7 @@ import { executeWithdraw} from "@/services/bridge/withdraw";
 import {useState, useMemo, useEffect} from "react";
 import { cn } from "@/lib/utils";
 import { useBalance} from "@/hooks/useBalance";
+import { verifyRecipientAddress} from "@/utils/address";
 import { GetCurrentRoute } from "@/services/bridge/routes";
 import { BRIDGE_CONFIG } from "@/services/config";
 import { useWalletStore } from "@/store/wallet-store";
@@ -122,14 +123,23 @@ export function BridgeForm({ initialMode = "deposit", className}:  BridgeFormPro
   // validation
   const hasAmount = amount.trim().length > 0 && amountNumber > 0;
   const hasRecipientAddress = recipientAddress.trim().length > 0;
-  const canSubmit = hasAmount && hasRecipientAddress && !isSubmitting;
 
-  // validation message for button
+  // validate the recipient address based on destination network
+  const isRecipientValid = useMemo(() => {
+    if (!hasRecipientAddress) return false;
+    return verifyRecipientAddress(recipientAddress, route.toNetwork.type);
+  }, [recipientAddress, route.toNetwork.type, hasRecipientAddress]);
+
+  const canSubmit = hasAmount && isRecipientValid && !isSubmitting;  // canSubmit is true when all fields are valid and the form is not submitting
+
+  // validation message for the button
   const validationMessage = !hasRecipientAddress
     ? "Connect wallet or enter address manually"
-    : !hasAmount
-      ? "Enter transfer amount"
-      : "";
+    : !isRecipientValid
+      ? `Enter a valid ${route.toNetwork.type} address`
+      :!hasAmount
+        ? "Enter transfer amount"
+        : "";
 
   const handleChangeMode = (newMode: BridgeMode) => {
     setMode(newMode);

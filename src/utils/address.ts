@@ -1,3 +1,7 @@
+// src/utils/address.ts
+import { isAddress, getAddress } from "viem";
+import { SYSTEM_CONTRACTS_ADDRESSES_RANGE} from "@/services/constants";
+
 /**
  * Mask a wallet address for logging/display.
  * Examples:
@@ -31,4 +35,46 @@ export function verifyBitcoinAddress(address: string): boolean {
     return len >= 42 && len <= 62;
   }
   return false;
+}
+
+/**
+ * Verify an EVM address (VIA, Ethereum, etc.).
+ *
+ * Validate that the address is a valid address format
+ * Validate that the address is not a system contract address
+ *
+ * @params address - The address to validate
+ * @returns true if valid, false otherwise
+ */
+export function verifyEvmAddress(address: string): boolean {
+  if (!address) return false;
+
+  try {
+    // Check if valid EVM address format
+    if (!isAddress(address)) return false;
+
+    // Normalize to checksummed address
+    const normalizedAddress = getAddress(address)
+
+    // Check if the address is not a system contract address
+    // System contracts are below the treshold defined in constants
+    const invalidReceiverBn = BigInt(SYSTEM_CONTRACTS_ADDRESSES_RANGE);
+    const recipientAddressBn = BigInt(normalizedAddress);
+
+    return recipientAddressBn > invalidReceiverBn;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Verify a recipient address based on the network type
+ *
+ * @param address - The address to verify
+ * @param networkType - The network type to verify against (evm, bitcoin)
+ * @returns true if valid, otherwise false
+ */
+export function verifyRecipientAddress(address: string, networkType: "bitcoin" | "evm"): boolean {
+  if (!address) return false;
+  return networkType === "bitcoin" ? verifyBitcoinAddress(address) : verifyEvmAddress(address);
 }
