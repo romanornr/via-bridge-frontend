@@ -27,7 +27,14 @@ import {toast} from "sonner";
 import {isAbortError} from "@/utils/promise";
 import ApprovalModal from "@/components/approval-modal";
 import {useDebounce} from "@/hooks/useDebounce";
-import {toL1Amount} from "@/helpers";
+import { toL1Amount } from "@/helpers";
+import {
+  FEE_RESERVE_BTC,
+  MIN_DEPOSIT_BTC,
+  MIN_DEPOSIT_SATS,
+  MIN_WITHDRAW_BTC,
+  MIN_WITHDRAW_SATS,
+} from "@/services/constants";
 
 interface BridgeFormProps {
   /** Initial mode */
@@ -112,9 +119,15 @@ export function BridgeForm({ initialMode = "deposit", className}:  BridgeFormPro
     if (!balance) return 0;
     const bal = parseFloat(balance);
     if (!Number.isFinite(bal)) return 0;
-    const feeReserve = mode === "deposit" ? 0.001 : 0;
+
+    // Fee reserve only needed for Bitcoin as source (to cover tx fees)
+    const feeReserve = route.fromNetwork.type === "bitcoin" ? FEE_RESERVE_BTC : 0;
     return Math.max(0, bal - feeReserve);
-  }, [balance, mode]);
+  }, [balance, route.fromNetwork.type]);
+
+  // Get minimum amount based on direction
+  const minAmount = mode === "deposit" ? MIN_DEPOSIT_BTC : MIN_WITHDRAW_BTC;
+  const minAmountSats = mode === "deposit" ? MIN_DEPOSIT_SATS : MIN_WITHDRAW_SATS;
 
   // calculate net receive in sats
   const amountInSats = Math.floor(amountNumber * 100_000_000);
@@ -122,6 +135,9 @@ export function BridgeForm({ initialMode = "deposit", className}:  BridgeFormPro
 
   // validation
   const hasAmount = amount.trim().length > 0 && amountNumber > 0;
+  const isAmountValid = hasAmount && amountNumber >= minAmount;
+  const isAmountBelowMin = hasAmount && amountNumber < minAmount;
+  
   const hasRecipientAddress = recipientAddress.trim().length > 0;
 
   // validate the recipient address based on destination network
@@ -130,16 +146,18 @@ export function BridgeForm({ initialMode = "deposit", className}:  BridgeFormPro
     return verifyRecipientAddress(recipientAddress, route.toNetwork.type);
   }, [recipientAddress, route.toNetwork.type, hasRecipientAddress]);
 
-  const canSubmit = hasAmount && isRecipientValid && !isSubmitting;  // canSubmit is true when all fields are valid and the form is not submitting
+  const canSubmit = isAmountValid && isRecipientValid && !isSubmitting;
 
   // validation message for the button
   const validationMessage = !hasRecipientAddress
     ? "Connect wallet or enter address manually"
     : !isRecipientValid
-      ? `Enter a valid ${route.toNetwork.type} address`
-      :!hasAmount
+      ? `Enter a valid ${route.toNetwork.displayName} address`
+      : !hasAmount
         ? "Enter transfer amount"
-        : "";
+        : isAmountBelowMin
+          ? `Minimum amount is ${minAmount} BTC (${minAmountSats.toLocaleString()} sats)`
+          : "";
 
   const handleChangeMode = (newMode: BridgeMode) => {
     setMode(newMode);
