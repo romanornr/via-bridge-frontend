@@ -1,11 +1,9 @@
 // src/components/bridge/bridge-form.tsx
-
 "use client";
 
-import { executeDeposit } from "@/services/bridge/deposit";
-import { executeWithdraw} from "@/services/bridge/withdraw";
 import {useState, useMemo, useEffect} from "react";
 import { cn } from "@/lib/utils";
+import { useBridgeSubmit } from "@/hooks/useBridgeSubmit";
 import { useBalance} from "@/hooks/useBalance";
 import { verifyRecipientAddress} from "@/utils/address";
 import { GetCurrentRoute } from "@/services/bridge/routes";
@@ -21,10 +19,9 @@ import {
   AmountSlider,
   TransactionSummaryCard,
   RecipientAddressSection,
-  BridgeSubmitButton
+  BridgeSubmitButton,
+  TransactionSuccessDialog,
 } from "./index";
-import {toast} from "sonner";
-import {isAbortError} from "@/utils/promise";
 import ApprovalModal from "@/components/approval-modal";
 import {useDebounce} from "@/hooks/useDebounce";
 import { toL1Amount } from "@/helpers";
@@ -63,9 +60,10 @@ export function BridgeForm({ initialMode = "deposit", className}:  BridgeFormPro
   const [mode, setMode] = useState<BridgeMode>(initialMode);
   const [amount, setAmount] = useState("");
   const [recipientAddress, setRecipientAddress] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [abortController, setAbortController] = useState<AbortController | null>(null);
   const [approvalOpen, setApprovalOpen] = useState(false);
+
+  // Use custom hook for submission logic
+  const { isSubmitting, successResult, submit, reset: resetSubmit, cancel } = useBridgeSubmit();
 
   // Get wallet data from store
   const { bitcoinAddress, bitcoinPublicKey } = useWalletStore();
@@ -177,107 +175,34 @@ export function BridgeForm({ initialMode = "deposit", className}:  BridgeFormPro
     setRecipientAddress("");
   };
 
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      abortController?.abort();
-    };
-  }, [abortController]);
+// Handle reset after successful transaction
+  const handleReset = () => {
+    resetSubmit();
+    setAmount("");
+    setRecipientAddress("");
+  };
 
   const handleSubmit = async  (e: React.FormEvent) => {
     e.preventDefault();
     if (!canSubmit) return;
 
-    // create abort controller for cancellation
-    const controller = new AbortController();
-    setAbortController(controller);
     setApprovalOpen(true);
-    setIsSubmitting(true);
-    try {
 
+    await submit({
+      route,
+      amount,
+      amountNumber,
+      recipientAddress,
+      bitcoinAddress,
+      bitcoinPublicKey,
+    });
 
-      // ROUTE-BASED EXECUTION LOGIC
-      // We derive the execution path from route properties (not mode).
-      //
-      // VIA is always the hub network:
-      // - All deposits go TO VIA (Bitcoin→VIA, future Ethereum→VIA)
-      // - All withdrawals come FROM VIA (VIA→Bitcoin, future VIA→Ethereum)
-      //
-      // Key variables:
-      // - sourceNetworkType: "bitcoin" | "evm" (route.fromNetwork.type)
-      // - direction: "deposit" | "withdraw" (route.direction)
-      // - route.toNetwork.type: destination network type for withdrawals
-      // ============================================================
-      const sourceNetworkType = route.fromNetwork.type;
-      const direction = route.direction;
-
-      // CASE 1: Bitcoin → VIA deposit
-      // Source is Bitcoin, direction is deposit
-      if (sourceNetworkType === "bitcoin" && direction === "deposit") {
-        if (!bitcoinAddress || !bitcoinPublicKey) {
-          throw new Error("Bitcoin wallet not connected");
-        }
-
-        const result = await executeDeposit({
-          bitcoinAddress,
-          bitcoinPublicKey,
-          recipientViaAddress: recipientAddress.slice(2), // remove 0x prefix
-          amountInBtc: amountNumber,
-          signal: controller.signal,
-        });
-
-        toast.success("Deposit submitted", { description: `Transaction: ${result.txId}` });
-
-      // CASE 2: VIA → external network withdrawal
-      // Source is EVM (VIA), direction is withdraw
-      // Check route.toNetwork.type to determine destination
-      } else if (sourceNetworkType === "evm" && direction === "withdraw") {
-        // CASE 2a: VIA → Bitcoin withdrawal
-        if (route.toNetwork.type === "bitcoin") {
-          const result = await executeWithdraw({
-            amount,
-            recipientBitcoinAddress: recipientAddress,
-            signal: controller.signal,
-          });
-          toast.success("withdrawal submitted!", { description: `Transaction: ${result.txHash}`});
-        // CASE 2b: VIA → Ethereum withdrawal (future)
-        } else if (route.toNetwork.type === "evm") {
-          // TODO: Implement executeEthereumWithdraw when Ethereum support is added
-          throw new Error(`Ethereum withdrawals not yet supported: ${route.id}`);
-        }
-
-      // CASE 3: Ethereum → VIA deposit (future)
-      // Source is EVM but not VIA (i.e., Ethereum), direction is deposit
-      } else if (sourceNetworkType === "evm" && direction === "deposit") {
-        if (route.fromNetwork.id.startsWith("ethereum-")) {
-          // TODO: Implement executeEthereumDeposit when Ethereum support is added
-          // await executeEthereumDeposit({...})
-        }
-        throw new Error(`Unsupported route: ${route.id}`);
-
-      // CASE 4: Unknown/unsupported route configuration
-      } else {
-        throw new  Error(`Unsupported route configuration: ${route.id}`);
-      }
-
-      // reset amount
-      setAmount("");
-      setRecipientAddress("");
-    } catch (error) {
-      console.error("Submit error:", error);
-      if (isAbortError(error)) {
-        toast.info("Transfer cancelled");
-      }
-      toast.error("Transfer failed", { description: error instanceof Error ? error.message : "unknown error" });
-    } finally {
-      setIsSubmitting(false);
-      setApprovalOpen(false);
-      setAbortController(null);
-    }
+    setApprovalOpen(false);
   };
 
   const handleCancelTransfer = () => {
-    abortController?.abort();
+    cancel();
+    setApprovalOpen(false);
   };
 
   return (
@@ -334,6 +259,14 @@ export function BridgeForm({ initialMode = "deposit", className}:  BridgeFormPro
           recipientAddress,
           networkFee: storeFeeEstimation ? `${storeFeeEstimation.fee.toLocaleString()} sats` : undefined,
         }}
+        />
+
+        {/* Success Dialog */}
+        <TransactionSuccessDialog
+          open={successResult !== null}
+          onOpenChange={(open) => !open && handleReset()}
+          result={successResult}
+          onReset={handleReset}
         />
       </div>
       </div>
