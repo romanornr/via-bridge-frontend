@@ -14,6 +14,8 @@ export interface TransactionResult {
   explorerUrl: string;
   type: "deposit" | "withdraw";
   amount: string;
+  /** Token symbol (e.g., "BTC", "USDC", "USDT") - supports future multi-asset bridging */
+  tokenSymbol: string;
 }
 
 /**
@@ -118,6 +120,7 @@ export function useBridgeSubmit(): UseBridgeSubmitResult {
           explorerUrl: result.explorerUrl,
           type: "deposit",
           amount,
+          tokenSymbol: route.token.symbol,
         });
 
         toast.success("Deposit submitted", { description: `Transaction: ${result.txId}` });
@@ -146,6 +149,7 @@ export function useBridgeSubmit(): UseBridgeSubmitResult {
             explorerUrl: result.explorerUrl,
             type: "withdraw",
             amount,
+            tokenSymbol: route.token.symbol,
           });
 
           toast.success("Withdrawal submitted!", { description: `Transaction: ${result.txHash}` });
