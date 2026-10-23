@@ -11,7 +11,7 @@ const nextConfig: NextConfig = {
   
   // Environment variables that should be available to the client
   env: {
-    NEXT_PUBLIC_NETWORK: process.env.NEXT_PUBLIC_NETWORK || 'testnet',
+    NEXT_PUBLIC_NETWORK: process.env.NEXT_PUBLIC_NETWORK || 'testnet4',
   },
   
   // Output configuration for different deployment targets

@@ -7,7 +7,7 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=development
-      - NEXT_PUBLIC_NETWORK=testnet
+      - NEXT_PUBLIC_NETWORK=testnet4
     volumes:
       # Mount source code for development (optional - remove for production)
       - ./src:/app/src:ro

@@ -19,7 +19,7 @@ This application allows users to:
 
 ### Prerequisites
 
-- Node.js 18+
+- Node.js 24 LTS (Next.js 16 requires 20.9 or newer)
 - npm, yarn, pnpm, or bun
 - MetaMask browser extension (for VIA network interactions)
 - Xverse wallet (for Bitcoin interactions)
@@ -28,13 +28,13 @@ This application allows users to:
 
 1. Copy the environment template:
 ```bash
-cp .env.example .env.local
+cp example.env .env.local
 ```
 
 2. Configure your environment variables:
 ```bash
-# Set network (testnet for development, mainnet for production)
-NEXT_PUBLIC_NETWORK=testnet
+# Set network (testnet4 for development, mainnet for production)
+NEXT_PUBLIC_NETWORK=testnet4
 ```
 
 ### MetaMask Network Configuration

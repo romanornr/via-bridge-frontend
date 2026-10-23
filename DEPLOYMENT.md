@@ -8,7 +8,9 @@ Create a `.env.production` file or set the following environment variables in yo
 
 ```bash
 # Required
-NEXT_PUBLIC_NETWORK=mainnet  # or testnet for staging
+NEXT_PUBLIC_NETWORK=mainnet  # or testnet4 for staging
+NEXT_PUBLIC_API_URL=
+NEXT_PUBLIC_WALLETCONNECT_ID=
 
 # Optional - Build optimizations
 BUILD_STANDALONE=true        # For Docker/containerized deployments
@@ -47,7 +49,7 @@ npm start
 
 #### Docker
 ```dockerfile
-FROM node:18-alpine AS base
+FROM node:24-alpine AS base
 
 # Install dependencies only when needed
 FROM base AS deps
@@ -117,7 +119,7 @@ docker-compose down
 ```
 
 The docker-compose configuration includes:
-- Development-friendly environment variables (`NODE_ENV=development`, `NEXT_PUBLIC_NETWORK=testnet`)
+- Development-friendly environment variables (`NODE_ENV=development`, `NEXT_PUBLIC_NETWORK=testnet4`)
 - Volume mounts for live code changes during development
 - Health checks to monitor container status
 - Automatic restart policies
@@ -164,7 +166,7 @@ Consider adding these monitoring tools:
 
 3. **Build Failures**
    - Check that all environment variables are properly set
-   - Ensure Node.js version compatibility (18+)
+   - Ensure Node.js version compatibility (20.9+, Node 24 LTS recommended)
 
 4. **Performance Issues**
    - Use `BUILD_STANDALONE=true` for containerized deployments
