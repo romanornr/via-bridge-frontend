@@ -8,7 +8,7 @@ export default function Footer() {
         
         <div className="flex items-center gap-6">
           <a 
-            href="https://docs.onvia.org/" 
+            href="https://docs.vianetwork.xyz/" 
             target="_blank" 
             rel="noopener noreferrer"
             className="hover:text-primary transition-colors"

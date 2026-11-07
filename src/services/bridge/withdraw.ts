@@ -164,7 +164,7 @@ export async function executeWithdraw(params: WithdrawParams): Promise<WithdrawR
     // Note: if abort happens after tx is obtained, proceed and surface tx to user
 
     const txHash = tx.hash;
-    const explorerBase = getNetworkConfig().blockExplorerUrls?.[0] ?? "https://testnet.blockscout.onvia.org";
+    const explorerBase = getNetworkConfig().blockExplorerUrls?.[0] ?? "https://explorer.testnet.vianetwork.xyz";
     const explorerUrl = `${explorerBase.replace(/\/+$/, "")}/tx/${txHash}`;
 
     return {
