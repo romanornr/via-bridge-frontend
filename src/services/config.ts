@@ -57,8 +57,8 @@ export const VIA_NETWORK_CONFIG: Record<BitcoinNetwork, (typeof VIA_EVM_CHAIN_PA
  * //   chainId: "0x6287",
  * //   chainName: "Via Network Sepolia",
  * //   nativeCurrency: { name: "BTC", symbol: "BTC", decimals: 18 },
- * //   rpcUrls: ["https://via.testnet.viablockchain.dev"],
- * //   blockExplorerUrls: ["https://testnet.blockscout.onvia.org"],
+ * //   rpcUrls: ["https://rpc.testnet.vianetwork.xyz"],
+ * //   blockExplorerUrls: ["https://explorer.testnet.vianetwork.xyz"],
  * // }
  * 
  * await provider.request({ method: 'wallet_addEthereumChain', params: [currentParams] });

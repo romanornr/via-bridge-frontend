@@ -8,11 +8,11 @@ export const ViaTestnet = defineChain({
   name: 'Via Network Sepolia',
   nativeCurrency: { name: 'BTC', symbol: 'BTC', decimals: 18 },
   rpcUrls: {
-    default: { http: ['https://via.testnet.viablockchain.dev'] },
-    public: { http: ['https://via.testnet.viablockchain.dev'] },
+    default: { http: ['https://rpc.testnet.vianetwork.xyz'] },
+    public: { http: ['https://rpc.testnet.vianetwork.xyz'] },
   },
   blockExplorers: {
-    default: { name: 'Blockscout', url: 'https://testnet.blockscout.onvia.org' },
+    default: { name: 'Blockscout', url: 'https://explorer.testnet.vianetwork.xyz' },
   },
   testnet: true,
 });

@@ -47,10 +47,10 @@ To use the VIA Bridge, you need to add the VIA network to your MetaMask wallet:
 |-----------|-------|
 | **Network Name** | VIA Alpha Testnet |
 | **Chain ID** | 25223 |
-| **RPC URL** | https://via.testnet.viablockchain.dev |
+| **RPC URL** | https://rpc.testnet.vianetwork.xyz |
 | **Base Token** | BTC |
 | **Decimals** | 18 |
-| **Block Explorer** | - |
+| **Block Explorer** | https://explorer.testnet.vianetwork.xyz |
 
 #### How to Add Network to MetaMask
 
@@ -136,7 +136,7 @@ NODE_ENV=development npm start
 ## Learn More
 
 - [Next.js Documentation](https://nextjs.org/docs)
-- [VIA official website](https://buildonvia.org)
-- [VIA Documentation](https://docs.onvia.org)
+- [VIA official website](https://www.vianetwork.xyz)
+- [VIA Documentation](https://docs.vianetwork.xyz/)
 - [MetaMask Documentation](https://docs.metamask.io)
 - [Xverse Documentation](https://docs.xverse.app)
