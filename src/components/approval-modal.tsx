@@ -111,7 +111,7 @@ export default function ApprovalModal({
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay className={`fixed inset-0 z-40 ${overlayClass}`} />
-        <DialogPrimitive.Content className="fixed inset-0 z-50 p-4 flex items-center justify-center outline-none pointer-events-none" aria-labelledby={titleId} aria-describedby={descId}>
+        <DialogPrimitive.Content className="fixed inset-0 z-50 p-4 flex items-center justify-center outline-hidden pointer-events-none" aria-labelledby={titleId} aria-describedby={descId}>
           <div className="bg-white border border-slate-200 rounded-2xl shadow-lg relative w-full max-w-2xl max-h-[92vh] overflow-hidden flex flex-col pointer-events-auto" >
             {/*Header*/}
             <div className="px-6 pt-6 pb-3 border-b border-slate-200 bg-white">
@@ -133,7 +133,7 @@ export default function ApprovalModal({
             {/* Scrollable body */}
             <div className="px-6 pt-0 pb-0 flex-1 min-h-0 overflow-y-auto">
               {/* Route */}
-              <div className="bg-slate-50 rounded-xl p-4 mb-6 border border-slate-200 shadow-sm">
+              <div className="bg-slate-50 rounded-xl p-4 mb-6 border border-slate-200 shadow-xs">
                 <div className="flex items-center justify-between">
                   <div className="text-base font-semibold text-slate-900">{transactionData?.fromNetwork.displayName}</div>
                   <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
@@ -148,7 +148,7 @@ export default function ApprovalModal({
                 <div className="grid grid-cols-3 gap-4">
                   {/* From */}
                   <div className="text-center">
-                    <div className="w-12 h-12 mx-auto rounded-full bg-slate-100 flex items-center justify-center mb-2 shadow-sm overflow-hidden" aria-hidden>
+                    <div className="w-12 h-12 mx-auto rounded-full bg-slate-100 flex items-center justify-center mb-2 shadow-xs overflow-hidden" aria-hidden>
                       {isBitcoin ? (
                         <span className="text-lg font-bold text-slate-900">₿</span>
                       ) : transactionData?.fromToken.icon && transactionData.fromToken.icon.startsWith('/') ? (
@@ -167,7 +167,7 @@ export default function ApprovalModal({
 
                   {/* Arrow */}
                   <div className="flex items-center justify-center">
-                    <div className="w-9 h-9 bg-white border border-slate-200 shadow-sm rounded-full flex items-center justify-center">
+                    <div className="w-9 h-9 bg-white border border-slate-200 shadow-xs rounded-full flex items-center justify-center">
                       <svg className="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                       </svg>
@@ -176,7 +176,7 @@ export default function ApprovalModal({
 
                   {/*To*/}
                   <div className="text-center">
-                    <div className="w-12 h-12 mx-auto rounded-full bg-slate-100 flex items-center justify-center mb-2 shadow-sm overflow-hidden" aria-hidden>
+                    <div className="w-12 h-12 mx-auto rounded-full bg-slate-100 flex items-center justify-center mb-2 shadow-xs overflow-hidden" aria-hidden>
                       {isBitcoin ? (
                         <span className="text-base font-bold text-slate-900">₿</span>
                       ) : transactionData?.toToken.icon && transactionData.toToken.icon.startsWith('/') ? (
@@ -210,7 +210,7 @@ export default function ApprovalModal({
               <div className="grid gap-3">
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-medium text-slate-700">Route</span>
-                  <span className="inline-flex items-center gap-2 text-xs font-semibold text-green-700 bg-green-50 rounded-full px-3 py-1 border border-green-200 shadow-sm">Optimal</span>
+                  <span className="inline-flex items-center gap-2 text-xs font-semibold text-green-700 bg-green-50 rounded-full px-3 py-1 border border-green-200 shadow-xs">Optimal</span>
                 </div>
                 {transactionData?.recipientAddress && (
                   <div className="flex justify-between items-center gap-3">
@@ -246,7 +246,7 @@ export default function ApprovalModal({
                 <button
                   onClick={handleCancel}
                   ref={closeBtnRef}
-                  className="px-4 py-2 rounded-lg bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 transition-colors font-semibold shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                  className="px-4 py-2 rounded-lg bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 transition-colors font-semibold shadow-xs focus:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-500"
                 >
                   Cancel
                 </button>

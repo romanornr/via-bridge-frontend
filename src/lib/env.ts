@@ -2,7 +2,7 @@ import { z } from "zod";
 import { BitcoinNetwork } from "@/services/bitcoin/types";
 
 const schema = z.object({
-    NEXT_PUBLIC_NETWORK: z.nativeEnum(BitcoinNetwork),
+    NEXT_PUBLIC_NETWORK: z.enum(BitcoinNetwork),
     NEXT_PUBLIC_ENABLE_FAUCET: z.preprocess(
         (val) => val === "true" || val === true,
         z.boolean(),
@@ -20,7 +20,7 @@ export const env = () => {
     });
 
     if (!parsed.success) {
-        throw new Error("Invalid client env: " + JSON.stringify(parsed.error.format(), null, 2));
+        throw new Error("Invalid client env: " + z.prettifyError(parsed.error));
     }
 
     return parsed.data;

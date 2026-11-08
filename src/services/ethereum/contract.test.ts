@@ -27,7 +27,7 @@ describe("isContractDeployed", () => {
     const mockBrowserProvider = { getCode: mockGetCode };
 
     vi.mocked(BrowserProvider).mockImplementation(
-      () => mockBrowserProvider as unknown as InstanceType<typeof BrowserProvider>
+      function () { return mockBrowserProvider as unknown as InstanceType<typeof BrowserProvider>; }
     );
 
     const result = await isContractDeployed(mockProvider, mockAddress);
@@ -44,7 +44,7 @@ describe("isContractDeployed", () => {
     const mockBrowserProvider = { getCode: mockGetCode };
 
     vi.mocked(BrowserProvider).mockImplementation(
-      () => mockBrowserProvider as unknown as InstanceType<typeof BrowserProvider>
+      function () { return mockBrowserProvider as unknown as InstanceType<typeof BrowserProvider>; }
     );
 
     const result = await isContractDeployed(mockProvider, mockAddress);
@@ -59,7 +59,7 @@ describe("isContractDeployed", () => {
     const mockBrowserProvider = { getCode: mockGetCode };
 
     vi.mocked(BrowserProvider).mockImplementation(
-      () => mockBrowserProvider as unknown as InstanceType<typeof BrowserProvider>
+      function () { return mockBrowserProvider as unknown as InstanceType<typeof BrowserProvider>; }
     );
 
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});

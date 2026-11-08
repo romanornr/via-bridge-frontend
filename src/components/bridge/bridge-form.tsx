@@ -276,7 +276,7 @@ export function BridgeForm({ initialMode = "deposit", className}:  BridgeFormPro
       <BridgeModeTabs mode={mode} onModeChange={handleChangeMode} />
 
       {/*Card container*/}
-      <div className="bg-white border border-slate-200 rounded-2xl shadow-sm">
+      <div className="bg-white border border-slate-200 rounded-2xl shadow-xs">
         {/*Title*/}
         <div className="text-center mb-4 pt-8 px-8">
           <h1 className="text-2xl font-bold text-slate-900 mb-2">Via Network Bridge</h1>

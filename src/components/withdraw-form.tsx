@@ -225,7 +225,7 @@ export default function WithdrawForm({ viaAddress, onTransactionSubmitted }: Wit
 
   if (isSuccess && txHash && explorerUrl) {
     return (
-      <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
+      <div className="fixed inset-0 bg-background/80 backdrop-blur-xs z-50 flex items-center justify-center">
         <div className="w-full max-w-md p-4">
           <div className="bg-background border border-border/50 rounded-lg shadow-lg p-6">
             <div className="space-y-8">
@@ -410,7 +410,7 @@ export default function WithdrawForm({ viaAddress, onTransactionSubmitted }: Wit
                 )}
 
                 {field.value && (
-                  <div className="text-xs text-muted-foreground mt-4 min-h-[1rem]">
+                  <div className="text-xs text-muted-foreground mt-4 min-h-4">
                     {isLoadingFeeEstimation ? (
                       <div className="w-48 h-4 rounded bg-muted animate-pulse" />
                     ) : feeEstimation !== null && (

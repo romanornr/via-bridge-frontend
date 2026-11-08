@@ -68,10 +68,10 @@ export default function WalletConnectButton({
   // walletName is determined dynamically based on available EIP-6963 providers
 
   return (
-    <div className="flex flex-col items-center justify-center p-8 space-y-6 bg-slate-50/50 rounded-xl border border-border/50 backdrop-blur-sm">
+    <div className="flex flex-col items-center justify-center p-8 space-y-6 bg-slate-50/50 rounded-xl border border-border/50 backdrop-blur-xs">
       <div className="relative">
         <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full" />
-        <div className="relative rounded-full bg-gradient-to-br from-primary/10 to-primary/5 p-4 ring-1 ring-primary/20">
+        <div className="relative rounded-full bg-linear-to-br from-primary/10 to-primary/5 p-4 ring-1 ring-primary/20">
           {!isConnected && (
             <span
               className="pointer-events-none absolute inset-0 rounded-full z-0 bg-primary/30 ring-2 ring-primary/50 animate-ping"
@@ -99,7 +99,7 @@ export default function WalletConnectButton({
       <Button
         onClick={isConnected ? handleDisconnect : handleConnect}
         variant={isConnected ? "outline" : "default"}
-        className="w-full h-11 text-base font-medium shadow-sm hover:shadow-md transition-all duration-200"
+        className="w-full h-11 text-base font-medium shadow-xs hover:shadow-md transition-all duration-200"
         disabled={isConnecting}
       >
         {isConnecting ? (

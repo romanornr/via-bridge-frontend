@@ -41,7 +41,7 @@ function NetworkChip({ label, networkName, icon }: NetworkChipProps) {
   const fallbackText = networkName.charAt(0).toUpperCase();
 
   return (
-    <button type="button" className={cn("group w-full rounded-xl sm:rounded-2xl", "bg-white border-slate-200", "px-3 sm:px-4 py-2 sm:py-3", "text-left shadow-sm hover:shadow transition-shadow")} aria-label={`${label} ${networkName}`}>
+    <button type="button" className={cn("group w-full rounded-xl sm:rounded-2xl", "bg-white border-slate-200", "px-3 sm:px-4 py-2 sm:py-3", "text-left shadow-xs hover:shadow-sm transition-shadow")} aria-label={`${label} ${networkName}`}>
       {/*Label: "From" or "To"*/}
       <div className="text-[10px] sm:text-xs uppercase tracking-wide text-slate-500">{label}</div>
 
@@ -81,7 +81,7 @@ function SwapButton({ onClick }: { onClick: () => void }) {
           "mx-auto rounded-full",
           "border border-slate-300 bg-white",
           "text-slate-700 hover:bg-slate-100",
-          "shadow-sm p-2 sm:p-2.5"
+          "shadow-xs p-2 sm:p-2.5"
         )}
         aria-label="Swap networks"
         title="Swap networks"

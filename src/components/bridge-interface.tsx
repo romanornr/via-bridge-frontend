@@ -74,7 +74,7 @@ export default function BridgeInterface() {
       {/*Transaction History shown when any wallet is connected*/}
       {isAnyWalletConnected && (
         <div className="w-full max-w-4xl px-4 mt-1">
-          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm">
+          <div className="bg-white border border-slate-200 rounded-2xl shadow-xs">
             <Button
               variant="ghost"
               className="flex items-center justify-between w-full py-4 px-6 text-sm font-medium"

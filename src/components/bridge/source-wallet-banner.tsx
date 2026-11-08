@@ -50,10 +50,10 @@ export function SourceWalletBanner({walletType, isConnected, isCorrectNetwork, t
   // Not connected state
   if (!isConnected) {
     return (
-      <div className="border-2 border-dashed border-blue-400 bg-gradient-to-br from-blue-50 to-white rounded-xl px-4 py-3.5 shadow-md mb-6">
+      <div className="border-2 border-dashed border-blue-400 bg-linear-to-br from-blue-50 to-white rounded-xl px-4 py-3.5 shadow-md mb-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md">
+            <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center shrink-0 shadow-md">
               <Wallet className="w-5 h-5 text-white" strokeWidth={2} />
             </div>
             <div>
@@ -79,10 +79,10 @@ export function SourceWalletBanner({walletType, isConnected, isCorrectNetwork, t
 
   // Connected but wrong network state
   return (
-    <div className="bg-gradient-to-r from-amber-50 to-amber-100 border-2 border-amber-300 rounded-xl px-4 py-3.5 shadow-md mb-6">
+    <div className="bg-linear-to-r from-amber-50 to-amber-100 border-2 border-amber-300 rounded-xl px-4 py-3.5 shadow-md mb-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-amber-200 rounded-full flex items-center justify-center flex-shrink-0">
+          <div className="w-8 h-8 bg-amber-200 rounded-full flex items-center justify-center shrink-0">
             <AlertTriangle className="w-4 h-4 text-amber-700" strokeWidth={2.5} />
           </div>
           <div>
@@ -96,7 +96,7 @@ export function SourceWalletBanner({walletType, isConnected, isCorrectNetwork, t
         </div>
         <button
           type="button"
-          className="px-4 py-2 text-xs font-semibold rounded-lg bg-white border-2 border-amber-400 text-amber-900 hover:bg-amber-50 shadow-sm"
+          className="px-4 py-2 text-xs font-semibold rounded-lg bg-white border-2 border-amber-400 text-amber-900 hover:bg-amber-50 shadow-xs"
           onClick={onSwitchNetwork}
         >
           Switch Network

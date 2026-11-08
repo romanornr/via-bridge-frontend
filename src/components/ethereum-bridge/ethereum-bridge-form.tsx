@@ -170,7 +170,7 @@ export function EthereumBridgeForm() {
       <div className="w-full max-w-4xl">
         <BridgeModeTabs mode={form.mode} onModeChange={form.setMode} withdrawBadgeCount={form.readyWithdrawalsCount} onWithdrawBadgeClick={() => form.setClaimModalOpen(true)} />
 
-        <div className="bg-white border border-slate-200 rounded-2xl shadow-sm">
+        <div className="bg-white border border-slate-200 rounded-2xl shadow-xs">
           <div className="text-center mb-4 pt-8 px-8">
             <h1 className="text-2xl font-bold text-slate-900 mb-2">Via Ethereum Network Bridge</h1>
             <p className="text-sm text-slate-600">Bridge assets securely</p>

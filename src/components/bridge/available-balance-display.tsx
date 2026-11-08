@@ -24,7 +24,7 @@ interface AvailableBalanceDisplayProps {
  */
 export function AvailableBalanceDisplay({balance, unit, isLoading, className} : AvailableBalanceDisplayProps) {
   return (
-    <div className={cn("bg-blue-50 border border-blue-100 rounded-lg px-4 py-3 shadow-sm", className)}>
+    <div className={cn("bg-blue-50 border border-blue-100 rounded-lg px-4 py-3 shadow-xs", className)}>
       <div className="flex items-center justify-between">
         {/*Label*/}
         <span className="text-sm font-medium text-slate-600">Available Balance</span>

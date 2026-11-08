@@ -297,7 +297,7 @@ export default function FaucetInterface() {
 
               {faucetRequest.status === 'success' && (
                 <Alert>
-                  <CheckCircle className="h-4 w-4 flex-shrink-0" />
+                  <CheckCircle className="h-4 w-4 shrink-0" />
                   <AlertDescription className="flex-1">
                     <div className="space-y-2">
                       {faucetRequest.txHash && (

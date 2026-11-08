@@ -21,11 +21,11 @@ interface BridgeModeTabsProps {
  */
 export function BridgeModeTabs({ mode, onModeChange, className, withdrawBadgeCount, onWithdrawBadgeClick }: BridgeModeTabsProps) {
   const tabBaseClass = 'rounded-xl py-3 text-sm font-medium transition-all';
-  const tabActiveClass = 'bg-white text-blue-600 shadow-sm';
+  const tabActiveClass = 'bg-white text-blue-600 shadow-xs';
   const tabInactiveClass = 'text-slate-600 hover:text-slate-900';
   const badgeBaseClass = 'absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full text-xs font-bold text-white transition-colors';
   const badgeToneClass = 'bg-red-500 hover:bg-red-600';
-  const badgeFocusClass = 'focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1';
+  const badgeFocusClass = 'focus:outline-hidden focus:ring-2 focus:ring-red-500 focus:ring-offset-1';
 
   const showWithdrawBadge = withdrawBadgeCount !== undefined && withdrawBadgeCount > 0;
   const depositTabClass = cn('flex-1', tabBaseClass, mode === 'deposit' ? tabActiveClass : tabInactiveClass);

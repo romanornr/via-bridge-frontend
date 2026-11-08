@@ -47,12 +47,14 @@ export function useWalletState() {
           }
         };
 
-        const networkChangeListener = addListener('networkChange', () => {
-          handleNetworkChange();
+        const networkChangeListener = addListener({
+          eventName: "networkChange",
+          cb: () => handleNetworkChange(),
         });
 
-        const disconnectListener = addListener('disconnect', () => {
-          handleConnectionChange(false);
+        const disconnectListener = addListener({
+          eventName: "disconnect",
+          cb: () => handleConnectionChange(false),
         });
 
         // Clean up listeners on unmount

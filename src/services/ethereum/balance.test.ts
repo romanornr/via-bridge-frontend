@@ -65,10 +65,10 @@ describe("getERC20Balance", () => {
     const mockContract = { balanceOf: mockBalanceOf };
 
     vi.mocked(BrowserProvider).mockImplementation(
-      () => mockProvider as unknown as InstanceType<typeof BrowserProvider>
+      function () { return mockProvider as unknown as InstanceType<typeof BrowserProvider>; }
     );
     vi.mocked(Contract).mockImplementation(
-      () => mockContract as unknown as InstanceType<typeof Contract>
+      function () { return mockContract as unknown as InstanceType<typeof Contract>; }
     );
     vi.mocked(formatUnits).mockReturnValue("1.0");
 
@@ -94,10 +94,10 @@ describe("getERC20Balance", () => {
     const mockContract = { balanceOf: mockBalanceOf };
 
     vi.mocked(BrowserProvider).mockImplementation(
-      () => mockProvider as unknown as InstanceType<typeof BrowserProvider>
+      function () { return mockProvider as unknown as InstanceType<typeof BrowserProvider>; }
     );
     vi.mocked(Contract).mockImplementation(
-      () => mockContract as unknown as InstanceType<typeof Contract>
+      function () { return mockContract as unknown as InstanceType<typeof Contract>; }
     );
 
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
@@ -124,10 +124,10 @@ describe("getERC20Balance", () => {
     const mockContract = { balanceOf: mockBalanceOf };
 
     vi.mocked(BrowserProvider).mockImplementation(
-      () => mockProvider as unknown as InstanceType<typeof BrowserProvider>
+      function () { return mockProvider as unknown as InstanceType<typeof BrowserProvider>; }
     );
     vi.mocked(Contract).mockImplementation(
-      () => mockContract as unknown as InstanceType<typeof Contract>
+      function () { return mockContract as unknown as InstanceType<typeof Contract>; }
     );
 
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});

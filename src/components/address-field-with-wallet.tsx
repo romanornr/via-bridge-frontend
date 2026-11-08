@@ -145,7 +145,7 @@ export default function AddressFieldWithWallet({
       <div className="flex items-center justify-between mb-4">
         <label className="text-sm font-semibold text-slate-900 uppercase tracking-wide">{computedLabel}</label>
         {(usingWallet || usingManual) && (
-          <div className={`text-[10px] font-semibold px-3 py-1 rounded-full border shadow-sm ${usingManual ? 'border-slate-300 text-slate-700 bg-white' : 'border-blue-200 text-blue-700 bg-blue-50'}`}>
+          <div className={`text-[10px] font-semibold px-3 py-1 rounded-full border shadow-xs ${usingManual ? 'border-slate-300 text-slate-700 bg-white' : 'border-blue-200 text-blue-700 bg-blue-50'}`}>
             {usingManual ? 'Source: Manual' : 'Source: Wallet'}
           </div>
         )}
@@ -158,10 +158,10 @@ export default function AddressFieldWithWallet({
 
       {/* Connected but on the wrong network -> nudge to switch */}
       {connected && !correctNetwork && (
-        <div className="bg-gradient-to-r from-amber-50 to-amber-100 border-2 border-amber-300 rounded-xl px-4 py-3.5 shadow-md mb-4">
+        <div className="bg-linear-to-r from-amber-50 to-amber-100 border-2 border-amber-300 rounded-xl px-4 py-3.5 shadow-md mb-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-amber-200 rounded-full flex items-center justify-center flex-shrink-0">
+              <div className="w-8 h-8 bg-amber-200 rounded-full flex items-center justify-center shrink-0">
                 <AlertTriangle className="w-4 h-4 text-amber-700" strokeWidth={2.5} />
               </div>
               <div>
@@ -171,7 +171,7 @@ export default function AddressFieldWithWallet({
             </div>
             <button 
               type="button" 
-              className="px-4 py-2 text-xs font-semibold rounded-lg bg-white border-2 border-amber-400 text-amber-900 hover:bg-amber-50 shadow-sm" 
+              className="px-4 py-2 text-xs font-semibold rounded-lg bg-white border-2 border-amber-400 text-amber-900 hover:bg-amber-50 shadow-xs" 
               onClick={() => {
                 if (isEvm) {
                   store.switchNetwork(Layer.L2);
@@ -193,10 +193,10 @@ export default function AddressFieldWithWallet({
 
       {/* Connected + correct network + wallet address + not manually overriding -> Show 'using wallet' summary */}
       {connected && correctNetwork && walletAddress && !showManual && (
-        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-5 shadow-lg mb-4">
+        <div className="bg-linear-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-5 shadow-lg mb-4">
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-start gap-3 flex-1">
-              <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md">
+              <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center shrink-0 shadow-md">
                 <Wallet className="w-5 h-5 text-white" strokeWidth={2} />
               </div>
               <div className="flex-1 min-w-0">
@@ -207,7 +207,7 @@ export default function AddressFieldWithWallet({
                   </div>
                   <button 
                     type="button" 
-                    className="px-4 py-2 text-xs font-semibold rounded-lg border-2 border-blue-300 bg-white text-blue-700 hover:bg-blue-50 shadow-sm whitespace-nowrap flex items-center gap-1.5 ml-3" 
+                    className="px-4 py-2 text-xs font-semibold rounded-lg border-2 border-blue-300 bg-white text-blue-700 hover:bg-blue-50 shadow-xs whitespace-nowrap flex items-center gap-1.5 ml-3" 
                     onClick={handleCopyAddress}
                     aria-label="Copy address to clipboard"
                   >
@@ -215,11 +215,11 @@ export default function AddressFieldWithWallet({
                   </button>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="flex-1 bg-white border border-blue-200 rounded-lg px-3 py-2 font-mono text-sm text-slate-900 shadow-sm">{maskAddress(walletAddress)}</div>
+                  <div className="flex-1 bg-white border border-blue-200 rounded-lg px-3 py-2 font-mono text-sm text-slate-900 shadow-xs">{maskAddress(walletAddress)}</div>
                   {allowManualOverride && (
                     <button 
                       type="button" 
-                      className="px-4 py-2 text-xs font-medium rounded-lg bg-blue-600 text-white hover:bg-blue-700 shadow-sm whitespace-nowrap" 
+                      className="px-4 py-2 text-xs font-medium rounded-lg bg-blue-600 text-white hover:bg-blue-700 shadow-xs whitespace-nowrap" 
                       onClick={() => setShowManual(true)}
                     >
                       Use Different
@@ -234,9 +234,9 @@ export default function AddressFieldWithWallet({
 
       {/* Not connected -> Prompt to connect wallet */}
       {!connected && (
-        <div className="border-2 border-dashed border-blue-400 bg-gradient-to-br from-blue-50 to-white rounded-xl p-6 shadow-md mb-4">
+        <div className="border-2 border-dashed border-blue-400 bg-linear-to-br from-blue-50 to-white rounded-xl p-6 shadow-md mb-4">
           <div className="flex items-start gap-4">
-            <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg">
+            <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center shrink-0 shadow-lg">
               <Wallet className="w-6 h-6 text-white" strokeWidth={2} />
             </div>
             <div className="flex-1">
@@ -253,7 +253,7 @@ export default function AddressFieldWithWallet({
                 {allowManualOverride && (
                   <button 
                     type="button" 
-                    className="text-slate-700 bg-white border-2 border-slate-300 rounded-lg px-5 py-2.5 text-sm font-medium hover:bg-slate-50 shadow-sm" 
+                    className="text-slate-700 bg-white border-2 border-slate-300 rounded-lg px-5 py-2.5 text-sm font-medium hover:bg-slate-50 shadow-xs" 
                     onClick={() => setShowManual(true)}
                   >
                     Enter Manually Instead
@@ -270,7 +270,7 @@ export default function AddressFieldWithWallet({
         <div className="space-y-4">
           {/* While connected, allow switching back to the wallet address */}
           {connected && (
-            <div className="bg-slate-50 border border-slate-300 rounded-lg p-4 shadow-sm">
+            <div className="bg-slate-50 border border-slate-300 rounded-lg p-4 shadow-xs">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -283,7 +283,7 @@ export default function AddressFieldWithWallet({
                 </div>
                 <button 
                   type="button" 
-                  className="px-4 py-2 text-xs font-semibold rounded-lg bg-blue-600 text-white hover:bg-blue-700 shadow-sm" 
+                  className="px-4 py-2 text-xs font-semibold rounded-lg bg-blue-600 text-white hover:bg-blue-700 shadow-xs" 
                   onClick={() => { 
                     if (walletAddress) onChange(walletAddress); 
                     setShowManual(false); 
@@ -316,7 +316,7 @@ export default function AddressFieldWithWallet({
                 if (!userHasTyped && e.target.value.trim().length > 0) setUserHasTyped(true); 
                 onChange(e.target.value); 
               }}
-              className="w-full font-mono border-2 border-dashed border-slate-400 bg-slate-50 focus:border-blue-500 focus:bg-white rounded-lg px-4 py-4 text-base focus:outline-none focus:ring-2 focus:ring-blue-200 shadow-inner placeholder:text-slate-400 transition-all"
+              className="w-full font-mono border-2 border-dashed border-slate-400 bg-slate-50 focus:border-blue-500 focus:bg-white rounded-lg px-4 py-4 text-base focus:outline-hidden focus:ring-2 focus:ring-blue-200 shadow-inner placeholder:text-slate-400 transition-all"
               aria-label={computedLabel}
             />
           </div>
@@ -324,7 +324,7 @@ export default function AddressFieldWithWallet({
           {/* Security Warning - shown when using manual entry */}
           {usingManual && (
             <div className="bg-white border-2 border-amber-400 rounded-xl overflow-hidden shadow-lg">
-              <div className="bg-gradient-to-r from-amber-100 to-amber-50 px-5 py-3 border-b-2 border-amber-400">
+              <div className="bg-linear-to-r from-amber-100 to-amber-50 px-5 py-3 border-b-2 border-amber-400">
                 <div className="flex items-center gap-2">
                   <AlertTriangle className="w-5 h-5 text-amber-700" strokeWidth={2.5} />
                   <span className="font-bold text-sm text-amber-900">Critical: Verify Recipient Address</span>
@@ -333,7 +333,7 @@ export default function AddressFieldWithWallet({
               <div className="p-5 bg-amber-50/50">
                 <div className="space-y-3 text-sm text-amber-900">
                   <div className="flex items-start gap-3">
-                    <div className="w-5 h-5 bg-amber-200 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <div className="w-5 h-5 bg-amber-200 rounded-full flex items-center justify-center shrink-0 mt-0.5">
                       <span className="text-amber-900 font-bold text-xs">1</span>
                     </div>
                     <div>
@@ -342,7 +342,7 @@ export default function AddressFieldWithWallet({
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
-                    <div className="w-5 h-5 bg-amber-200 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <div className="w-5 h-5 bg-amber-200 rounded-full flex items-center justify-center shrink-0 mt-0.5">
                       <span className="text-amber-900 font-bold text-xs">2</span>
                     </div>
                     <div>
@@ -351,7 +351,7 @@ export default function AddressFieldWithWallet({
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
-                    <div className="w-5 h-5 bg-amber-200 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <div className="w-5 h-5 bg-amber-200 rounded-full flex items-center justify-center shrink-0 mt-0.5">
                       <span className="text-amber-900 font-bold text-xs">3</span>
                     </div>
                     <div>
@@ -366,7 +366,7 @@ export default function AddressFieldWithWallet({
 
           {/* Live preview of the recipient and source */}
           {value && (
-            <div className="bg-slate-100 border border-slate-300 rounded-lg px-4 py-3 shadow-sm">
+            <div className="bg-slate-100 border border-slate-300 rounded-lg px-4 py-3 shadow-xs">
               <div className="text-xs text-slate-600 mb-1">Recipient Address Preview:</div>
               <div className="font-mono text-sm text-slate-900 font-medium">
                 {maskAddress(value)}

@@ -44,7 +44,7 @@ export function VaultCard({
             <CardHeader className="pb-1">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 min-w-0 flex-1">
-                        <div className="relative h-6 w-6 rounded-full overflow-hidden flex-shrink-0">
+                        <div className="relative h-6 w-6 rounded-full overflow-hidden shrink-0">
                             <Image
                                 src={icon}
                                 alt={symbol}
@@ -56,7 +56,7 @@ export function VaultCard({
                             {name}
                         </CardTitle>
                     </div>
-                    <div className="flex-shrink-0 ml-2">
+                    <div className="shrink-0 ml-2">
                         {selectionHint ? (
                             <span className="text-xs font-medium text-muted-foreground flex items-center gap-1">
                                 {selectionHint} <ChevronDown className="h-3 w-3" />

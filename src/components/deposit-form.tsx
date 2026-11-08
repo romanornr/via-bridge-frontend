@@ -34,10 +34,6 @@ interface DepositFormProps {
   onTransactionSubmitted: () => void;
 }
 
-interface FormContext {
-  _balance?: string;
-}
-
 const depositFormSchema = z.object({
   amount: z
     .string()
@@ -48,22 +44,6 @@ const depositFormSchema = z.object({
       return Number.isFinite(n) && n >= MIN_DEPOSIT_BTC;
     }, {
       message: `Minimum amount is ${MIN_DEPOSIT_BTC} BTC (${MIN_DEPOSIT_SATS.toLocaleString()} sats)`,
-    })
-    .superRefine((val, ctx) => {
-      // Get balance from context
-      const formValues = ctx.path[0] as FormContext;
-      const balance = formValues?._balance ? parseFloat(formValues._balance) : 0;
-
-      // Skip validation if no balance available
-      if (balance <= 0) return;
-
-      // Check if amount exceeds balance
-      if (Number.parseFloat(val) > balance) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Amount exceeds available balance",
-        });
-      }
     }),
   recipientViaAddress: z
     .string()
@@ -118,23 +98,15 @@ export default function DepositForm({ bitcoinAddress, bitcoinPublicKey, onTransa
   // Import the wallet store to get the VIA address
   const { addLocalTransaction, isLoadingFeeEstimation, feeEstimation, fetchDepositFeeEstimation, resetFeeEstimation } = useWalletStore();
 
-  const form = useForm<z.infer<typeof depositFormSchema> & FormContext>({
+  const form = useForm<z.infer<typeof depositFormSchema>>({
     resolver: zodResolver(depositFormSchema),
     mode: "onChange",
     reValidateMode: "onChange",
     defaultValues: {
       amount: "",
       recipientViaAddress: "",
-      _balance: "0",
     },
   });
-
-  // Update balance in form values when it changes
-  useEffect(() => {
-    if (balance) {
-      form.setValue("_balance" as any, balance);
-    }
-  }, [balance, form]);
 
   // Recipient VIA address is managed by AddressFieldWithWallet (connect + autofill + manual override)
 
@@ -295,7 +267,7 @@ export default function DepositForm({ bitcoinAddress, bitcoinPublicKey, onTransa
 
   if (isSuccess && txHash && explorerUrl) {
     return (
-      <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
+      <div className="fixed inset-0 bg-background/80 backdrop-blur-xs z-50 flex items-center justify-center">
         <div className="w-full max-w-md p-4">
           <div className="bg-background border border-border/50 rounded-lg shadow-lg p-6">
             <div className="space-y-8">
@@ -502,7 +474,7 @@ export default function DepositForm({ bitcoinAddress, bitcoinPublicKey, onTransa
                 )}
 
                 {field.value && (
-                  <div className="text-xs text-muted-foreground mt-4 min-h-[1rem]">
+                  <div className="text-xs text-muted-foreground mt-4 min-h-4">
                     {isLoadingFeeEstimation ? (
                       <div className="w-48 h-4 rounded bg-muted animate-pulse" />
                     ) : feeEstimation !== null && (
